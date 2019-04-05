@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import tester.*;
 import javalib.impworld.*;
 import java.awt.Color;
@@ -57,8 +59,19 @@ class LightEmAll extends World {
       boardImg = new AboveImage(rowImg, boardImg);
       rowImg = new EmptyImage();
     }
-
     return boardImg;
+  }
+
+  // Handles all clicking
+  public void onMouseClicked(Posn mousePos, String button) {
+    int posX = mousePos.x / GamePiece.CELL_LENGTH;
+    int posY = mousePos.y / GamePiece.CELL_LENGTH;
+    GamePiece gp = this.board.get(posX).get(posY);
+    if (button.equals("LeftButton")
+        && (posY <= this.height && 0 <= posY && posX <= this.width && 0 <= posX)) {
+      System.out.println(mousePos);
+      gp.rotate();
+    }
   }
 }
 
@@ -88,7 +101,8 @@ class GamePiece {
     WorldImage outline = new RectangleImage(CELL_LENGTH, CELL_LENGTH, OutlineMode.OUTLINE,
         Color.BLACK);
     WorldImage result = new OverlayImage(
-        new RectangleImage(CELL_LENGTH, CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
+        new RectangleImage(CELL_LENGTH, CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY),
+        new EmptyImage());
 
     LineImage vertLine = new LineImage(new Posn(0, CELL_LENGTH / 2), Color.ORANGE);
     LineImage horLine = new LineImage(new Posn(CELL_LENGTH / 2, 0), Color.ORANGE);
@@ -108,16 +122,28 @@ class GamePiece {
     }
 
     if (this.bottom) {
-      result = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLine, 0, 0, result);
+      result = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLine, 0, 0,
+          result);
     }
 
     if (this.powerStation) {
       WorldImage star = new StarImage(15, OutlineMode.SOLID, Color.CYAN);
       result = new OverlayImage(star, result);
-      }
-
+    }
     return new OverlayImage(outline, result);
   }
+  
+  // When clicked, the GamePiece is rotated clockwise (90º)
+  void rotate() {
+    boolean prevLeft = this.left;
+    boolean prevTop = this.top;
+    boolean prevBot = this.bottom;
+    boolean prevRight = this.right;
+    this.top = prevLeft;
+    this.right = prevTop;
+    this.bottom = prevRight;
+    this.left = prevBot;
+  }  
 }
 
 class Edge {
@@ -130,7 +156,7 @@ class ExamplesGame {
   LightEmAll test;
 
   void initData() {
-    test = new LightEmAll(15, 5);
+    test = new LightEmAll(10, 10);
   }
 
   void testMain(Tester t) {
