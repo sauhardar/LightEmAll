@@ -4,7 +4,7 @@ import javalib.impworld.*;
 import java.awt.Color;
 import javalib.worldimages.*;
 
-class LightEmAll extends World {
+class LightEmAllSauhard extends World {
 
   // a list of columns of GamePieces
   ArrayList<ArrayList<GamePiece>> board;
@@ -20,7 +20,7 @@ class LightEmAll extends World {
   int powerCol;
   int radius;
 
-  LightEmAll(int width, int height) {
+  LightEmAllSauhard(int width, int height) {
     this.width = width * GamePiece.CELL_LENGTH;
     this.height = height * GamePiece.CELL_LENGTH;
     this.board = makeBoard();
@@ -86,34 +86,6 @@ class LightEmAll extends World {
     }
   }
 
-  /*
-   * NOT DONE - NOT NEEDED FOR PART 1
-   * public WorldEnd worldEnds() {
-   * if (allConnected()) {
-   * return new WorldEnd(true, this.finalScene());
-   * }
-   * else {
-   * return new WorldEnd(false, this.makeScene());
-   * }
-   * }
-   */
-
-
-  public WorldScene finalScene() {
-    WorldScene ws = this.makeScene();
-
-    ws.placeImageXY(new TextImage("You won", 35, Color.MAGENTA), this.width / 2, this.height / 2);
-
-    return ws;
-  }
-
-  /*
-   * NOT DONE - NOT NEEDED FOR PART 1
-   * public boolean allConnected() {
-   * return true;
-   * }
-   */
-
   // Determines if two neighbors are connected
   boolean piecesConnected(GamePiece target, GamePiece other) {
     // target is ABOVE other
@@ -144,8 +116,6 @@ class GamePiece {
   boolean top;
   boolean bottom;
   boolean powerStation;
-
-  // boolean isConnected;
 
   GamePiece(int row, int col, boolean left, boolean right, boolean top, boolean bottom,
       boolean powerStation) {
@@ -214,10 +184,10 @@ class Edge {
 }
 
 class ExamplesGame {
-  LightEmAll test;
+  LightEmAllSauhard test;
 
   void initData() {
-    test = new LightEmAll(5, 5);
+    test = new LightEmAllSauhard(5, 5);
   }
 
   void testMain(Tester t) {
