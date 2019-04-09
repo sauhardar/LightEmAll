@@ -27,16 +27,24 @@ class LightEmAll extends World {
     this.board = this.makeBoard();
   }
 
-  // Makes the scene
+  // Makes the scene with all the game pieces drawn.
   public WorldScene makeScene() {
     WorldScene scene = new WorldScene(this.width, this.height);
-    scene.placeImageXY(this.drawBoard(), this.width / 2, this.height / 2);
+
+    for (ArrayList<GamePiece> row : this.board) {
+      for (GamePiece cell : row) {
+        scene.placeImageXY(cell.drawPiece(),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    }
     return scene;
   }
 
-  // Creates the game board
-  // Currently written with a manual generation that always makes the same board
+  // Manually creates game board with a predetermined board.
+  // Currently written with a manual generation that always makes the same board.
   public ArrayList<ArrayList<GamePiece>> makeBoard() {
+
     ArrayList<ArrayList<GamePiece>> boardResult = new ArrayList<ArrayList<GamePiece>>();
     int midPointH = (this.height / GamePiece.CELL_LENGTH) / 2;
     int midPointW = (this.width / GamePiece.CELL_LENGTH) / 2;
@@ -62,21 +70,8 @@ class LightEmAll extends World {
     return boardResult;
   }
 
-  // Draws the board
-  public WorldImage drawBoard() {
-    WorldImage boardImg = new EmptyImage();
-
-    for (ArrayList<GamePiece> row : this.board) {
-      WorldImage rowImg = new EmptyImage();
-      for (GamePiece cell : row) {
-        rowImg = new BesideImage(rowImg, cell.drawPiece());
-      }
-      boardImg = new AboveImage(boardImg, rowImg);
-    }
-    return boardImg;
-  }
-
-  // Handles all clicking
+  // Handles all clicking, which is just rotating.
+  // EFFECT: Shifts the on-clicked gamepiece's boolean values clockwise once.
   public void onMouseClicked(Posn mousePos, String button) {
     int posX = mousePos.x / GamePiece.CELL_LENGTH;
     int posY = mousePos.y / GamePiece.CELL_LENGTH;
@@ -87,7 +82,7 @@ class LightEmAll extends World {
     }
   }
 
-  // Determines if two neighbors are connected
+  // Determines if two given GamePieces are connected
   boolean piecesConnected(GamePiece target, GamePiece other) {
     // target is ABOVE other
     if (target.row + 1 == other.row && target.col == other.col) {
@@ -107,6 +102,7 @@ class LightEmAll extends World {
   }
 }
 
+// Represents one GamePiece of the board/grid.
 class GamePiece {
   static final int CELL_LENGTH = 40;
 
@@ -178,6 +174,7 @@ class GamePiece {
   }
 }
 
+// Represents a connection between nodes.
 class Edge {
   GamePiece fromNode;
   GamePiece toNode;
@@ -188,6 +185,7 @@ class Edge {
   }
 }
 
+// All the examples and tests.
 class ExamplesGame {
   LightEmAll test;
   LightEmAll threex3;
@@ -196,7 +194,7 @@ class ExamplesGame {
 
   void initData() {
     // To use with bigbang
-    test = new LightEmAll(5, 5);
+    test = new LightEmAll(15, 10);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3);
     // To test a 4x4 grid
@@ -205,37 +203,49 @@ class ExamplesGame {
     fivex5 = new LightEmAll(5, 5);
   }
 
-  /*TEST ARE BEING WHACK, NOTHING 5X5 AND ABOVE WORKS. WOT?*/
-  
-  
   // Runs the program with a predetermined, easy-to-solve pattern.
-//  void testMain(Tester t) {
-//    initData();
-//    test.bigBang(test.width, test.height, .003);
-//  }
+  void testMain(Tester t) {
+    initData();
+    test.bigBang(test.width, test.height, .003);
+  }
 
   // Tests:
   void testMakeScene(Tester t) {
     initData();
     // testing 3x3
     WorldScene testImage1 = new WorldScene(this.threex3.width, this.threex3.width);
-    testImage1.placeImageXY(this.threex3.drawBoard(), this.threex3.width / 2,
-        this.threex3.height / 2);
+    for (ArrayList<GamePiece> row : this.threex3.board) {
+      for (GamePiece cell : row) {
+        testImage1.placeImageXY(cell.drawPiece(),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    }
     // testing 4x4
     WorldScene testImage = new WorldScene(this.fourx4.width, this.fourx4.width);
-    testImage.placeImageXY(this.fourx4.drawBoard(), this.fourx4.width / 2, this.fourx4.height / 2);
-    // testing 5x5
-    // WorldScene testImage2 = new WorldScene(this.fivex5.width, this.fivex5.width);
-    // testImage2.placeImageXY(this.fivex5.drawBoard(), this.fivex5.width / 2,
-    // this.fivex5.height / 2);
-
+    for (ArrayList<GamePiece> row : this.fourx4.board) {
+      for (GamePiece cell : row) {
+        testImage.placeImageXY(cell.drawPiece(),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    }    // testing 5x5
+    WorldScene testImage2 = new WorldScene(this.fivex5.width, this.fivex5.width);
+    for (ArrayList<GamePiece> row : this.fivex5.board) {
+      for (GamePiece cell : row) {
+        testImage2.placeImageXY(cell.drawPiece(),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    }
     t.checkExpect(this.fourx4.makeScene(), testImage);
     t.checkExpect(this.threex3.makeScene(), testImage1);
-    // t.checkExpect(this.fivex5.makeBoard(), testImage2);
+    t.checkExpect(this.fivex5.makeScene(), testImage2);
   }
 
   // Testing the method makeBoard()
   void testMakeBoard(Tester t) {
+
 
     initData();
     // Testing a 3x3 board that is manually created.
@@ -309,43 +319,7 @@ class ExamplesGame {
         && this.fivex5.board.get(2).get(2).top && this.fivex5.board.get(2).get(2).bottom, true);
   }
 
-  // Testing the drawing of the given boards
-  void testDrawBoard(Tester t) {
-    initData();
-    // Testing a 3x3 grid
-    WorldImage board3x3 = new EmptyImage();
 
-    for (ArrayList<GamePiece> row : this.threex3.board) {
-      WorldImage rowImg = new EmptyImage();
-      for (GamePiece cell : row) {
-        rowImg = new BesideImage(rowImg, cell.drawPiece());
-      }
-      board3x3 = new AboveImage(board3x3, rowImg);
-    }
-
-    WorldImage board4x4 = new EmptyImage();
-
-    for (ArrayList<GamePiece> row : this.fourx4.board) {
-      WorldImage rowImg = new EmptyImage();
-      for (GamePiece cell : row) {
-        rowImg = new BesideImage(rowImg, cell.drawPiece());
-      }
-      board4x4 = new AboveImage(board4x4, rowImg);
-    }
-
-//    WorldImage board5x5 = new EmptyImage();
-//
-//    for (ArrayList<GamePiece> row : this.fivex5.board) {
-//      WorldImage rowImg = new EmptyImage();
-//      for (GamePiece cell : row) {
-//        rowImg = new BesideImage(rowImg, cell.drawPiece());
-//      }
-//      board5x5 = new AboveImage(board5x5, rowImg);
-//    }
-
-    t.checkExpect(this.threex3.drawBoard(), board3x3);
-    t.checkExpect(this.fourx4.drawBoard(), board4x4);
-  }
 
   // Testing the whether clicking rotates the game pieces correctly.
   void testOnMouseClicked(Tester t) {
