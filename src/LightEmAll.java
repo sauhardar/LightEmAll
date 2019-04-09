@@ -402,10 +402,10 @@ class ExamplesGame {
         new OverlayImage(outlineTopRight, resultTopRight));
     // Two down (4-way connection)
     t.checkExpect(this.fivex5.board.get(0).get(2).drawPiece(),
-        new OverlayImage(outlineTopRight, resultTopRight));
+        new OverlayImage(outline4way, resultTopRight));
     // Testing the star (middle) piece
     t.checkExpect(this.fivex5.board.get(2).get(2).drawPiece(),
-        new OverlayImage(outlineTopRight, resultstar));
+        new OverlayImage(outlinestar, resultstar));
   }
 
   // Testing rotation for various game pieces.
