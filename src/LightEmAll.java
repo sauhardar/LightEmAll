@@ -84,7 +84,6 @@ class LightEmAll extends World {
       ArrayList<GamePiece> rowResult = new ArrayList<GamePiece>();
       for (int j = 0; j < this.width / GamePiece.CELL_LENGTH; j++) {
         rowResult.add(new GamePiece(i, j, false, false, false, false, false));
-
       }
       boardResult.add(rowResult);
     }
@@ -96,6 +95,7 @@ class LightEmAll extends World {
     int startRow = currRow;
     int startCol = currCol;
 
+    System.out.println(numRows + " " + numCols + " " + currRow + " " + currCol);
     // Top left of U
     this.board.get(startRow).get(startCol).bottom = true;
     // Bottom left
@@ -135,14 +135,37 @@ class LightEmAll extends World {
       this.board.get(startRow).get(startCol).bottom = true;
       this.board.get(startRow + 1).get(startCol).top = true;
     }
+    else if (numRows == 2) {
+      for (int i = startCol + 1; i < startCol + numCols - 1; i++) {
+        this.board.get(startRow).get(i).bottom = true;
+        this.board.get(startRow + 1).get(i).top = true;
+      }
+    }
     else if (numRows == 3 && numCols == 3) {
       this.board.get(startRow + 1).get(startCol).right = true;
       this.board.get(startRow).get(startCol + 1).bottom = true;
       this.board.get(startRow + 1).get(startCol + 1).left = true;
       this.board.get(startRow + 1).get(startCol + 1).top = true;
-
     }
-    else if (numRows >= 4 || numCols >= 4) {
+    else if (numRows == 3 && numCols == 4) {
+      this.board.get(startRow).get(startCol+1).bottom = true;
+      this.board.get(startRow+1).get(startCol).right = true;
+      this.board.get(startRow+1).get(startCol+1).left = true;
+      this.board.get(startRow+1).get(startCol+1).top = true;
+      this.board.get(startRow+1).get(startCol+2).right = true;
+      this.board.get(startRow+1).get(startCol+2).top = true;
+      this.board.get(startRow).get(startCol+2).bottom = true;
+      this.board.get(startRow+1).get(startCol+3).left = true;
+    }
+    else if (numRows == 4 && numCols == 3) {
+      this.board.get(startRow).get(startCol+1).bottom = true;
+      this.board.get(startRow+1).get(startCol+1).left = true;
+      this.board.get(startRow+1).get(startCol+1).top = true;
+      this.board.get(startRow+1).get(startCol).right = true;
+      this.board.get(startRow+2).get(startCol+1).bottom = true;
+      this.board.get(startRow+3).get(startCol+1).top = true;
+    }
+    else if (numRows >= 4 && numCols >= 4) {
       // Top left quadrant
       fractalBoard((int) Math.ceil(numRows / 2.0), (int) Math.ceil(numCols / 2.0), currRow,
           currCol);
@@ -358,7 +381,7 @@ class ExamplesGame {
 
   void initData() {
     // To use with bigbang
-    test = new LightEmAll(7, 7);
+    test = new LightEmAll(2,2);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3);
     // To test a 4x4 grid
