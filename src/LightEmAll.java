@@ -135,29 +135,38 @@ class LightEmAll extends World {
       this.board.get(startRow).get(startCol).bottom = true;
       this.board.get(startRow + 1).get(startCol).top = true;
     }
-    else if(numCols == 2) {
-      System.out.println("4x2");
+    else if (numRows == 3 && numCols == 3) {
+      this.board.get(startRow + 1).get(startCol).right = true;
+      this.board.get(startRow).get(startCol + 1).bottom = true;
+      this.board.get(startRow + 1).get(startCol + 1).left = true;
+      this.board.get(startRow + 1).get(startCol + 1).top = true;
+
     }
-    else if (numRows == 2) {
-      for(int i = startCol + 1; i < startCol + numCols - 1; i++) {
-        this.board.get(0).get(i).bottom = true;
-        this.board.get(1).get(i).top = true;
-      }
-    }
-    else if (numRows > 3 && numCols > 3){
+    else if (numRows >= 4 || numCols >= 4) {
       // Top left quadrant
       fractalBoard((int) Math.ceil(numRows / 2.0), (int) Math.ceil(numCols / 2.0), currRow,
           currCol);
+      System.out.println("\ntop left numRows: " + (int) Math.ceil(numRows / 2.0) + "\nnumCols: "
+          + (int) Math.ceil(numCols / 2.0) + "\nstarting row: " + currRow + "\nstarting col: "
+          + currCol);
 
       // Top right quadrant
-      fractalBoard((int) Math.ceil(numRows/ 2.0), numCols/ 2, currRow + numCols/2, currCol);
+      fractalBoard((int) Math.ceil(numRows / 2.0), numCols / 2, currRow, currCol + (int) Math.ceil(numCols / 2.0));
+      System.out.println(
+          "\ntop right numRows: " + (int) Math.ceil(numRows / 2.0) + "\nnumCols: " + numCols / 2
+              + "\nstarting row: " + currRow + "\nstarting col: " + (currCol + (int) Math.ceil(numCols / 2.0)));
 
       // Bottom left quadrant
-      fractalBoard(numRows / 2, (int) Math.ceil(numCols / 2.0), currRow, currCol + numCols / 2);
+      fractalBoard(numRows / 2, (int) Math.ceil(numCols / 2.0), currRow + (int) Math.ceil(numRows / 2.0), currCol);
+      System.out.println(
+          "\nbottom left numRows: " + numRows / 2 + "\nnumCols: " + (int) Math.ceil(numCols / 2.0)
+              + "\nstarting row: " + (currRow + (int) Math.ceil(numRows / 2.0)) + "\nstarting col: " + currCol);
 
       // Bottom right quadrant
-      fractalBoard(numRows/2, numCols/2, currRow + numRows/2, currCol + numCols/2);
-
+      fractalBoard(numRows / 2, numCols / 2, currRow + (int) Math.ceil(numRows / 2.0), currCol + (int) Math.ceil(numCols / 2.0));
+      System.out.println("\nbottom right numRows: " + numRows / 2 + "\nnumCols: " + numCols / 2
+          + "\nstarting row: " + (currRow + (int) Math.ceil(numRows / 2.0)) + "\nstarting col: "
+          + (currCol + (int) Math.ceil(numCols / 2.0)));
     }
 
     this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
@@ -349,7 +358,7 @@ class ExamplesGame {
 
   void initData() {
     // To use with bigbang
-    test = new LightEmAll(4, 5);
+    test = new LightEmAll(7, 7);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3);
     // To test a 4x4 grid
