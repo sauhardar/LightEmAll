@@ -19,11 +19,13 @@ class LightEmAll extends World {
   int powerRow;
   int powerCol;
   int radius;
+  HashMap<GamePiece, Integer> graph = new HashMap<GamePiece, Integer>();
 
   LightEmAll(int numRows, int numCols, int boardType) {
     this.width = numCols * GamePiece.CELL_LENGTH;
     this.height = numRows * GamePiece.CELL_LENGTH;
 
+    // 0 is manualGeneration, 1 is fractal, 2 is random
     if (boardType == 0) {
       this.board = this.makeBoard();
     }
@@ -31,14 +33,23 @@ class LightEmAll extends World {
       this.board = this.manualBoard();
       this.fractalBoard(numRows, numCols, 0, 0);
     }
-
+    this.nodes = new ArrayList<GamePiece>();
+    this.getNodes();
   }
 
-//  LightEmAll(int width, int height) {
-//    this.width = width * GamePiece.CELL_LENGTH;
-//    this.height = height * GamePiece.CELL_LENGTH;
-//    this.board = this.makeBoard();
-//  }
+  void getNodes() {
+    for (ArrayList<GamePiece> row : this.board) {
+      for (GamePiece gp : row) {
+        this.nodes.add(gp);
+      }
+    }
+  }
+
+  void initHash() {
+    for (GamePiece gp : this.nodes) {
+      this.graph.put(gp, -1);
+    }
+  }
 
   // Makes the scene with all the game pieces drawn.
   public WorldScene makeScene() {
@@ -66,8 +77,8 @@ class LightEmAll extends World {
       for (int j = 0; j < this.width / GamePiece.CELL_LENGTH; j++) {
         if (i == midPointH && j == midPointW) {
           rowResult.add(new GamePiece(i, j, true, true, true, true, true));
-          this.powerCol = midPointH;
-          this.powerRow = midPointW;
+          this.powerCol = midPointW;
+          this.powerRow = midPointH;
         }
         else if (i == midPointH) {
           rowResult.add(new GamePiece(i, j, true, true, true, true, false));
@@ -124,15 +135,7 @@ class LightEmAll extends World {
       this.board.get(startRow + numRows - 1).get(i).right = true;
     }
 
-    if (numRows == 2 && numCols == 2) {
-      this.board.get(startRow).get(startCol).bottom = true;
-      this.board.get(startRow + 1).get(startCol).right = true;
-      this.board.get(startRow + 1).get(startCol).top = true;
-      this.board.get(startRow).get(startCol + 1).bottom = true;
-      this.board.get(startRow + 1).get(startCol + 1).left = true;
-      this.board.get(startRow + 1).get(startCol + 1).top = true;
-    }
-    else if (numRows == 1 && numCols == 2) {
+    if (numRows == 1 && numCols == 2) {
       this.board.get(startRow).get(startCol).right = true;
       this.board.get(startRow).get(startCol + 1).left = true;
     }
@@ -377,7 +380,7 @@ class ExamplesGame {
 
   void initData() {
     // To use with bigbang
-    test = new LightEmAll(7, 7, 1);
+    test = new LightEmAll(4, 4, 1);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3, 0);
     // To test a 4x4 grid
@@ -392,7 +395,6 @@ class ExamplesGame {
     test.bigBang(test.width, test.height, .003);
   }
 
-  // Tests:
   // Testing the makeScene() method
   void testMakeScene(Tester t) {
     initData();
@@ -428,84 +430,79 @@ class ExamplesGame {
   }
 
   // Testing the method makeBoard()
-   void testMakeBoard(Tester t) {
+  void testMakeBoard(Tester t) {
 
-   initData();
-   // Testing a 3x3 board that is manually created.
-   ArrayList<ArrayList<GamePiece>> answer = new
-   ArrayList<ArrayList<GamePiece>>();
-   ArrayList<GamePiece> row1 = new ArrayList<GamePiece>(
-   Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
-   new GamePiece(0, 1, true, true, false, false, false),
-   new GamePiece(0, 2, true, true, false, false, false)));
-   ArrayList<GamePiece> row2 = new ArrayList<GamePiece>(
-   Arrays.asList(new GamePiece(1, 0, true, true, true, true, false),
-   new GamePiece(1, 1, true, true, true, true, true),
-   new GamePiece(1, 2, true, true, true, true, false)));
-   ArrayList<GamePiece> row3 = new ArrayList<GamePiece>(
-   Arrays.asList(new GamePiece(2, 0, true, true, false, false, false),
-   new GamePiece(2, 1, true, true, false, false, false),
-   new GamePiece(2, 2, true, true, false, false, false)));
+    initData();
+    // Testing a 3x3 board that is manually created.
+    ArrayList<ArrayList<GamePiece>> answer = new ArrayList<ArrayList<GamePiece>>();
+    ArrayList<GamePiece> row1 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
+            new GamePiece(0, 1, true, true, false, false, false),
+            new GamePiece(0, 2, true, true, false, false, false)));
+    ArrayList<GamePiece> row2 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(1, 0, true, true, true, true, false),
+            new GamePiece(1, 1, true, true, true, true, true),
+            new GamePiece(1, 2, true, true, true, true, false)));
+    ArrayList<GamePiece> row3 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(2, 0, true, true, false, false, false),
+            new GamePiece(2, 1, true, true, false, false, false),
+            new GamePiece(2, 2, true, true, false, false, false)));
 
-   answer.add(row1);
-   answer.add(row2);
-   answer.add(row3);
+    answer.add(row1);
+    answer.add(row2);
+    answer.add(row3);
 
-   t.checkExpect(this.threex3.makeBoard(), answer);
+    t.checkExpect(this.threex3.makeBoard(), answer);
 
-   // Testing a 5x5 board
-   ArrayList<ArrayList<GamePiece>> answer2 = new
-   ArrayList<ArrayList<GamePiece>>();
-   ArrayList<GamePiece> row15 = new ArrayList<GamePiece>(
-   Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
-   new GamePiece(0, 1, true, true, false, false, false),
-   new GamePiece(0, 2, true, true, false, false, false),
-   new GamePiece(0, 3, true, true, false, false, false),
-   new GamePiece(0, 4, true, true, false, false, false)));
-   ArrayList<GamePiece> row25 = new ArrayList<GamePiece>(
-   Arrays.asList(new GamePiece(1, 0, true, true, false, false, false),
-   new GamePiece(1, 1, true, true, false, false, false),
-   new GamePiece(1, 2, true, true, false, false, false),
-   new GamePiece(1, 3, true, true, false, false, false),
-   new GamePiece(1, 4, true, true, false, false, false)));
-   ArrayList<GamePiece> row35 = new ArrayList<GamePiece>(
-   Arrays.asList(new GamePiece(2, 0, true, true, true, true, false),
-   new GamePiece(2, 1, true, true, true, true, false),
-   new GamePiece(2, 2, true, true, true, true, true),
-   new GamePiece(2, 3, true, true, true, true, false),
-   new GamePiece(2, 4, true, true, true, true, false)));
-   ArrayList<GamePiece> row45 = new ArrayList<GamePiece>(
-   Arrays.asList(new GamePiece(3, 0, true, true, false, false, false),
-   new GamePiece(3, 1, true, true, false, false, false),
-   new GamePiece(3, 2, true, true, false, false, false),
-   new GamePiece(3, 3, true, true, false, false, false),
-   new GamePiece(3, 4, true, true, false, false, false)));
-   ArrayList<GamePiece> row55 = new ArrayList<GamePiece>(
-   Arrays.asList(new GamePiece(4, 0, true, true, false, false, false),
-   new GamePiece(4, 1, true, true, false, false, false),
-   new GamePiece(4, 2, true, true, false, false, false),
-   new GamePiece(4, 3, true, true, false, false, false),
-   new GamePiece(4, 4, true, true, false, false, false)));
+    // Testing a 5x5 board
+    ArrayList<ArrayList<GamePiece>> answer2 = new ArrayList<ArrayList<GamePiece>>();
+    ArrayList<GamePiece> row15 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
+            new GamePiece(0, 1, true, true, false, false, false),
+            new GamePiece(0, 2, true, true, false, false, false),
+            new GamePiece(0, 3, true, true, false, false, false),
+            new GamePiece(0, 4, true, true, false, false, false)));
+    ArrayList<GamePiece> row25 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(1, 0, true, true, false, false, false),
+            new GamePiece(1, 1, true, true, false, false, false),
+            new GamePiece(1, 2, true, true, false, false, false),
+            new GamePiece(1, 3, true, true, false, false, false),
+            new GamePiece(1, 4, true, true, false, false, false)));
+    ArrayList<GamePiece> row35 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(2, 0, true, true, true, true, false),
+            new GamePiece(2, 1, true, true, true, true, false),
+            new GamePiece(2, 2, true, true, true, true, true),
+            new GamePiece(2, 3, true, true, true, true, false),
+            new GamePiece(2, 4, true, true, true, true, false)));
+    ArrayList<GamePiece> row45 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(3, 0, true, true, false, false, false),
+            new GamePiece(3, 1, true, true, false, false, false),
+            new GamePiece(3, 2, true, true, false, false, false),
+            new GamePiece(3, 3, true, true, false, false, false),
+            new GamePiece(3, 4, true, true, false, false, false)));
+    ArrayList<GamePiece> row55 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(4, 0, true, true, false, false, false),
+            new GamePiece(4, 1, true, true, false, false, false),
+            new GamePiece(4, 2, true, true, false, false, false),
+            new GamePiece(4, 3, true, true, false, false, false),
+            new GamePiece(4, 4, true, true, false, false, false)));
 
-   answer2.add(row15);
-   answer2.add(row25);
-   answer2.add(row35);
-   answer2.add(row45);
-   answer2.add(row55);
+    answer2.add(row15);
+    answer2.add(row25);
+    answer2.add(row35);
+    answer2.add(row45);
+    answer2.add(row55);
 
-   t.checkExpect(this.fivex5.makeBoard(), answer2);
-   // More testing 5x5 creation:
-   t.checkExpect(this.fivex5.board.get(0).get(0).bottom, false);
-   t.checkExpect(this.fivex5.board.get(0).get(0).right &&
-   this.fivex5.board.get(0).get(0).left,
-   true);
-   t.checkExpect(this.fivex5.board.get(0).get(0).powerStation, false);
-   t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
-   t.checkExpect(this.fivex5.board.get(2).get(2).right &&
-   this.fivex5.board.get(2).get(2).left
-   && this.fivex5.board.get(2).get(2).top &&
-   this.fivex5.board.get(2).get(2).bottom, true);
-   }
+    t.checkExpect(this.fivex5.makeBoard(), answer2);
+    // More testing 5x5 creation:
+    t.checkExpect(this.fivex5.board.get(0).get(0).bottom, false);
+    t.checkExpect(this.fivex5.board.get(0).get(0).right && this.fivex5.board.get(0).get(0).left,
+        true);
+    t.checkExpect(this.fivex5.board.get(0).get(0).powerStation, false);
+    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
+    t.checkExpect(this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left
+        && this.fivex5.board.get(2).get(2).top && this.fivex5.board.get(2).get(2).bottom, true);
+  }
 
   // Testing the whether clicking rotates the game pieces correctly.
   void testOnMouseClicked(Tester t) {
@@ -541,6 +538,7 @@ class ExamplesGame {
         this.fourx4.board.get(2).get(3)), true);
   }
 
+  // Testing drwaing individual game pieces
   void testDrawPiece(Tester t) {
     initData();
     LineImage vertLine = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2), Color.ORANGE);
