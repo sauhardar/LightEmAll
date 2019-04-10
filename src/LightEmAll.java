@@ -20,12 +20,18 @@ class LightEmAll extends World {
   int powerCol;
   int radius;
 
-  LightEmAll(int numRows, int numCols) {
+  LightEmAll(int numRows, int numCols, int boardType) {
     this.width = numCols * GamePiece.CELL_LENGTH;
     this.height = numRows * GamePiece.CELL_LENGTH;
-    this.board = this.manualBoard();
 
-    this.fractalBoard(numRows, numCols, 0, 0);
+    if (boardType == 0) {
+      this.board = this.makeBoard();
+    }
+    else if (boardType == 1) {
+      this.board = this.manualBoard();
+      this.fractalBoard(numRows, numCols, 0, 0);
+    }
+
   }
 
 //  LightEmAll(int width, int height) {
@@ -95,7 +101,6 @@ class LightEmAll extends World {
     int startRow = currRow;
     int startCol = currCol;
 
-    System.out.println(numRows + " " + numCols + " " + currRow + " " + currCol);
     // Top left of U
     this.board.get(startRow).get(startCol).bottom = true;
     // Bottom left
@@ -148,48 +153,39 @@ class LightEmAll extends World {
       this.board.get(startRow + 1).get(startCol + 1).top = true;
     }
     else if (numRows == 3 && numCols == 4) {
-      this.board.get(startRow).get(startCol+1).bottom = true;
-      this.board.get(startRow+1).get(startCol).right = true;
-      this.board.get(startRow+1).get(startCol+1).left = true;
-      this.board.get(startRow+1).get(startCol+1).top = true;
-      this.board.get(startRow+1).get(startCol+2).right = true;
-      this.board.get(startRow+1).get(startCol+2).top = true;
-      this.board.get(startRow).get(startCol+2).bottom = true;
-      this.board.get(startRow+1).get(startCol+3).left = true;
+      this.board.get(startRow).get(startCol + 1).bottom = true;
+      this.board.get(startRow + 1).get(startCol).right = true;
+      this.board.get(startRow + 1).get(startCol + 1).left = true;
+      this.board.get(startRow + 1).get(startCol + 1).top = true;
+      this.board.get(startRow + 1).get(startCol + 2).right = true;
+      this.board.get(startRow + 1).get(startCol + 2).top = true;
+      this.board.get(startRow).get(startCol + 2).bottom = true;
+      this.board.get(startRow + 1).get(startCol + 3).left = true;
     }
     else if (numRows == 4 && numCols == 3) {
-      this.board.get(startRow).get(startCol+1).bottom = true;
-      this.board.get(startRow+1).get(startCol+1).left = true;
-      this.board.get(startRow+1).get(startCol+1).top = true;
-      this.board.get(startRow+1).get(startCol).right = true;
-      this.board.get(startRow+2).get(startCol+1).bottom = true;
-      this.board.get(startRow+3).get(startCol+1).top = true;
+      this.board.get(startRow).get(startCol + 1).bottom = true;
+      this.board.get(startRow + 1).get(startCol + 1).left = true;
+      this.board.get(startRow + 1).get(startCol + 1).top = true;
+      this.board.get(startRow + 1).get(startCol).right = true;
+      this.board.get(startRow + 2).get(startCol + 1).bottom = true;
+      this.board.get(startRow + 3).get(startCol + 1).top = true;
     }
     else if (numRows >= 4 && numCols >= 4) {
       // Top left quadrant
       fractalBoard((int) Math.ceil(numRows / 2.0), (int) Math.ceil(numCols / 2.0), currRow,
           currCol);
-      System.out.println("\ntop left numRows: " + (int) Math.ceil(numRows / 2.0) + "\nnumCols: "
-          + (int) Math.ceil(numCols / 2.0) + "\nstarting row: " + currRow + "\nstarting col: "
-          + currCol);
 
       // Top right quadrant
-      fractalBoard((int) Math.ceil(numRows / 2.0), numCols / 2, currRow, currCol + (int) Math.ceil(numCols / 2.0));
-      System.out.println(
-          "\ntop right numRows: " + (int) Math.ceil(numRows / 2.0) + "\nnumCols: " + numCols / 2
-              + "\nstarting row: " + currRow + "\nstarting col: " + (currCol + (int) Math.ceil(numCols / 2.0)));
+      fractalBoard((int) Math.ceil(numRows / 2.0), numCols / 2, currRow,
+          currCol + (int) Math.ceil(numCols / 2.0));
 
       // Bottom left quadrant
-      fractalBoard(numRows / 2, (int) Math.ceil(numCols / 2.0), currRow + (int) Math.ceil(numRows / 2.0), currCol);
-      System.out.println(
-          "\nbottom left numRows: " + numRows / 2 + "\nnumCols: " + (int) Math.ceil(numCols / 2.0)
-              + "\nstarting row: " + (currRow + (int) Math.ceil(numRows / 2.0)) + "\nstarting col: " + currCol);
+      fractalBoard(numRows / 2, (int) Math.ceil(numCols / 2.0),
+          currRow + (int) Math.ceil(numRows / 2.0), currCol);
 
       // Bottom right quadrant
-      fractalBoard(numRows / 2, numCols / 2, currRow + (int) Math.ceil(numRows / 2.0), currCol + (int) Math.ceil(numCols / 2.0));
-      System.out.println("\nbottom right numRows: " + numRows / 2 + "\nnumCols: " + numCols / 2
-          + "\nstarting row: " + (currRow + (int) Math.ceil(numRows / 2.0)) + "\nstarting col: "
-          + (currCol + (int) Math.ceil(numCols / 2.0)));
+      fractalBoard(numRows / 2, numCols / 2, currRow + (int) Math.ceil(numRows / 2.0),
+          currCol + (int) Math.ceil(numCols / 2.0));
     }
 
     this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
@@ -381,13 +377,13 @@ class ExamplesGame {
 
   void initData() {
     // To use with bigbang
-    test = new LightEmAll(2,2);
+    test = new LightEmAll(7, 7, 1);
     // To test a 3x3 grid
-    threex3 = new LightEmAll(3, 3);
+    threex3 = new LightEmAll(3, 3, 0);
     // To test a 4x4 grid
-    fourx4 = new LightEmAll(4, 4);
+    fourx4 = new LightEmAll(4, 4, 0);
     // To test a 5x5 grid
-    fivex5 = new LightEmAll(5, 5);
+    fivex5 = new LightEmAll(5, 5, 0);
   }
 
 // Runs the program with a predetermined, easy-to-solve pattern.
@@ -398,226 +394,226 @@ class ExamplesGame {
 
   // Tests:
   // Testing the makeScene() method
-//  void testMakeScene(Tester t) {
-//    initData();
-//    // testing 3x3
-//    WorldScene testImage1 = new WorldScene(this.threex3.width, this.threex3.width);
-//    for (ArrayList<GamePiece> row : this.threex3.board) {
-//      for (GamePiece cell : row) {
-//        testImage1.placeImageXY(cell.drawPiece(),
-//            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
-//            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
-//      }
-//    }
-//    // testing 4x4
-//    WorldScene testImage = new WorldScene(this.fourx4.width, this.fourx4.width);
-//    for (ArrayList<GamePiece> row : this.fourx4.board) {
-//      for (GamePiece cell : row) {
-//        testImage.placeImageXY(cell.drawPiece(),
-//            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
-//            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
-//      }
-//    } // testing 5x5
-//    WorldScene testImage2 = new WorldScene(this.fivex5.width, this.fivex5.width);
-//    for (ArrayList<GamePiece> row : this.fivex5.board) {
-//      for (GamePiece cell : row) {
-//        testImage2.placeImageXY(cell.drawPiece(),
-//            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
-//            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
-//      }
-//    }
-//    t.checkExpect(this.fourx4.makeScene(), testImage);
-//    t.checkExpect(this.threex3.makeScene(), testImage1);
-//    t.checkExpect(this.fivex5.makeScene(), testImage2);
-//  }
+  void testMakeScene(Tester t) {
+    initData();
+    // testing 3x3
+    WorldScene testImage1 = new WorldScene(this.threex3.width, this.threex3.width);
+    for (ArrayList<GamePiece> row : this.threex3.board) {
+      for (GamePiece cell : row) {
+        testImage1.placeImageXY(cell.drawPiece(),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    }
+    // testing 4x4
+    WorldScene testImage = new WorldScene(this.fourx4.width, this.fourx4.width);
+    for (ArrayList<GamePiece> row : this.fourx4.board) {
+      for (GamePiece cell : row) {
+        testImage.placeImageXY(cell.drawPiece(),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    } // testing 5x5
+    WorldScene testImage2 = new WorldScene(this.fivex5.width, this.fivex5.width);
+    for (ArrayList<GamePiece> row : this.fivex5.board) {
+      for (GamePiece cell : row) {
+        testImage2.placeImageXY(cell.drawPiece(),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    }
+    t.checkExpect(this.fourx4.makeScene(), testImage);
+    t.checkExpect(this.threex3.makeScene(), testImage1);
+    t.checkExpect(this.fivex5.makeScene(), testImage2);
+  }
 
   // Testing the method makeBoard()
-//   void testMakeBoard(Tester t) {
-//
-//   initData();
-//   // Testing a 3x3 board that is manually created.
-//   ArrayList<ArrayList<GamePiece>> answer = new
-//   ArrayList<ArrayList<GamePiece>>();
-//   ArrayList<GamePiece> row1 = new ArrayList<GamePiece>(
-//   Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
-//   new GamePiece(0, 1, true, true, false, false, false),
-//   new GamePiece(0, 2, true, true, false, false, false)));
-//   ArrayList<GamePiece> row2 = new ArrayList<GamePiece>(
-//   Arrays.asList(new GamePiece(1, 0, true, true, true, true, false),
-//   new GamePiece(1, 1, true, true, true, true, true),
-//   new GamePiece(1, 2, true, true, true, true, false)));
-//   ArrayList<GamePiece> row3 = new ArrayList<GamePiece>(
-//   Arrays.asList(new GamePiece(2, 0, true, true, false, false, false),
-//   new GamePiece(2, 1, true, true, false, false, false),
-//   new GamePiece(2, 2, true, true, false, false, false)));
-//
-//   answer.add(row1);
-//   answer.add(row2);
-//   answer.add(row3);
-//
-//   t.checkExpect(this.threex3.makeBoard(), answer);
-//
-//   // Testing a 5x5 board
-//   ArrayList<ArrayList<GamePiece>> answer2 = new
-//   ArrayList<ArrayList<GamePiece>>();
-//   ArrayList<GamePiece> row15 = new ArrayList<GamePiece>(
-//   Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
-//   new GamePiece(0, 1, true, true, false, false, false),
-//   new GamePiece(0, 2, true, true, false, false, false),
-//   new GamePiece(0, 3, true, true, false, false, false),
-//   new GamePiece(0, 4, true, true, false, false, false)));
-//   ArrayList<GamePiece> row25 = new ArrayList<GamePiece>(
-//   Arrays.asList(new GamePiece(1, 0, true, true, false, false, false),
-//   new GamePiece(1, 1, true, true, false, false, false),
-//   new GamePiece(1, 2, true, true, false, false, false),
-//   new GamePiece(1, 3, true, true, false, false, false),
-//   new GamePiece(1, 4, true, true, false, false, false)));
-//   ArrayList<GamePiece> row35 = new ArrayList<GamePiece>(
-//   Arrays.asList(new GamePiece(2, 0, true, true, true, true, false),
-//   new GamePiece(2, 1, true, true, true, true, false),
-//   new GamePiece(2, 2, true, true, true, true, true),
-//   new GamePiece(2, 3, true, true, true, true, false),
-//   new GamePiece(2, 4, true, true, true, true, false)));
-//   ArrayList<GamePiece> row45 = new ArrayList<GamePiece>(
-//   Arrays.asList(new GamePiece(3, 0, true, true, false, false, false),
-//   new GamePiece(3, 1, true, true, false, false, false),
-//   new GamePiece(3, 2, true, true, false, false, false),
-//   new GamePiece(3, 3, true, true, false, false, false),
-//   new GamePiece(3, 4, true, true, false, false, false)));
-//   ArrayList<GamePiece> row55 = new ArrayList<GamePiece>(
-//   Arrays.asList(new GamePiece(4, 0, true, true, false, false, false),
-//   new GamePiece(4, 1, true, true, false, false, false),
-//   new GamePiece(4, 2, true, true, false, false, false),
-//   new GamePiece(4, 3, true, true, false, false, false),
-//   new GamePiece(4, 4, true, true, false, false, false)));
-//
-//   answer2.add(row15);
-//   answer2.add(row25);
-//   answer2.add(row35);
-//   answer2.add(row45);
-//   answer2.add(row55);
-//
-//   t.checkExpect(this.fivex5.makeBoard(), answer2);
-//   // More testing 5x5 creation:
-//   t.checkExpect(this.fivex5.board.get(0).get(0).bottom, false);
-//   t.checkExpect(this.fivex5.board.get(0).get(0).right &&
-//   this.fivex5.board.get(0).get(0).left,
-//   true);
-//   t.checkExpect(this.fivex5.board.get(0).get(0).powerStation, false);
-//   t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
-//   t.checkExpect(this.fivex5.board.get(2).get(2).right &&
-//   this.fivex5.board.get(2).get(2).left
-//   && this.fivex5.board.get(2).get(2).top &&
-//   this.fivex5.board.get(2).get(2).bottom, true);
-//   }
+   void testMakeBoard(Tester t) {
+
+   initData();
+   // Testing a 3x3 board that is manually created.
+   ArrayList<ArrayList<GamePiece>> answer = new
+   ArrayList<ArrayList<GamePiece>>();
+   ArrayList<GamePiece> row1 = new ArrayList<GamePiece>(
+   Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
+   new GamePiece(0, 1, true, true, false, false, false),
+   new GamePiece(0, 2, true, true, false, false, false)));
+   ArrayList<GamePiece> row2 = new ArrayList<GamePiece>(
+   Arrays.asList(new GamePiece(1, 0, true, true, true, true, false),
+   new GamePiece(1, 1, true, true, true, true, true),
+   new GamePiece(1, 2, true, true, true, true, false)));
+   ArrayList<GamePiece> row3 = new ArrayList<GamePiece>(
+   Arrays.asList(new GamePiece(2, 0, true, true, false, false, false),
+   new GamePiece(2, 1, true, true, false, false, false),
+   new GamePiece(2, 2, true, true, false, false, false)));
+
+   answer.add(row1);
+   answer.add(row2);
+   answer.add(row3);
+
+   t.checkExpect(this.threex3.makeBoard(), answer);
+
+   // Testing a 5x5 board
+   ArrayList<ArrayList<GamePiece>> answer2 = new
+   ArrayList<ArrayList<GamePiece>>();
+   ArrayList<GamePiece> row15 = new ArrayList<GamePiece>(
+   Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
+   new GamePiece(0, 1, true, true, false, false, false),
+   new GamePiece(0, 2, true, true, false, false, false),
+   new GamePiece(0, 3, true, true, false, false, false),
+   new GamePiece(0, 4, true, true, false, false, false)));
+   ArrayList<GamePiece> row25 = new ArrayList<GamePiece>(
+   Arrays.asList(new GamePiece(1, 0, true, true, false, false, false),
+   new GamePiece(1, 1, true, true, false, false, false),
+   new GamePiece(1, 2, true, true, false, false, false),
+   new GamePiece(1, 3, true, true, false, false, false),
+   new GamePiece(1, 4, true, true, false, false, false)));
+   ArrayList<GamePiece> row35 = new ArrayList<GamePiece>(
+   Arrays.asList(new GamePiece(2, 0, true, true, true, true, false),
+   new GamePiece(2, 1, true, true, true, true, false),
+   new GamePiece(2, 2, true, true, true, true, true),
+   new GamePiece(2, 3, true, true, true, true, false),
+   new GamePiece(2, 4, true, true, true, true, false)));
+   ArrayList<GamePiece> row45 = new ArrayList<GamePiece>(
+   Arrays.asList(new GamePiece(3, 0, true, true, false, false, false),
+   new GamePiece(3, 1, true, true, false, false, false),
+   new GamePiece(3, 2, true, true, false, false, false),
+   new GamePiece(3, 3, true, true, false, false, false),
+   new GamePiece(3, 4, true, true, false, false, false)));
+   ArrayList<GamePiece> row55 = new ArrayList<GamePiece>(
+   Arrays.asList(new GamePiece(4, 0, true, true, false, false, false),
+   new GamePiece(4, 1, true, true, false, false, false),
+   new GamePiece(4, 2, true, true, false, false, false),
+   new GamePiece(4, 3, true, true, false, false, false),
+   new GamePiece(4, 4, true, true, false, false, false)));
+
+   answer2.add(row15);
+   answer2.add(row25);
+   answer2.add(row35);
+   answer2.add(row45);
+   answer2.add(row55);
+
+   t.checkExpect(this.fivex5.makeBoard(), answer2);
+   // More testing 5x5 creation:
+   t.checkExpect(this.fivex5.board.get(0).get(0).bottom, false);
+   t.checkExpect(this.fivex5.board.get(0).get(0).right &&
+   this.fivex5.board.get(0).get(0).left,
+   true);
+   t.checkExpect(this.fivex5.board.get(0).get(0).powerStation, false);
+   t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
+   t.checkExpect(this.fivex5.board.get(2).get(2).right &&
+   this.fivex5.board.get(2).get(2).left
+   && this.fivex5.board.get(2).get(2).top &&
+   this.fivex5.board.get(2).get(2).bottom, true);
+   }
 
   // Testing the whether clicking rotates the game pieces correctly.
-//  void testOnMouseClicked(Tester t) {
-//    initData();
-//    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
-//    this.threex3.onMouseClicked(new Posn(10, 10), "RightButton");
-//    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
-//    this.threex3.onMouseClicked(new Posn(10, 10), "LeftButton");
-//    t.checkExpect(this.threex3.board.get(0).get(0).bottom, true);
-//    this.threex3.onMouseClicked(new Posn(10, 10), "LeftButton");
-//    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
-//    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
-//    t.checkExpect(this.fivex5.board.get(2).get(2).right, true);
-//    this.fivex5.onMouseClicked(new Posn(2 * GamePiece.CELL_LENGTH, 2 * GamePiece.CELL_LENGTH),
-//        "LeftButton");
-//    t.checkExpect(this.fivex5.board.get(2).get(2).right, true);
-//    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
-//  }
+  void testOnMouseClicked(Tester t) {
+    initData();
+    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
+    this.threex3.onMouseClicked(new Posn(10, 10), "RightButton");
+    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
+    this.threex3.onMouseClicked(new Posn(10, 10), "LeftButton");
+    t.checkExpect(this.threex3.board.get(0).get(0).bottom, true);
+    this.threex3.onMouseClicked(new Posn(10, 10), "LeftButton");
+    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
+    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
+    t.checkExpect(this.fivex5.board.get(2).get(2).right, true);
+    this.fivex5.onMouseClicked(new Posn(2 * GamePiece.CELL_LENGTH, 2 * GamePiece.CELL_LENGTH),
+        "LeftButton");
+    t.checkExpect(this.fivex5.board.get(2).get(2).right, true);
+    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
+  }
 
   // Testing whether the pieces are connected
-//  void testPiecesConnected(Tester t) {
-//    initData();
-//    t.checkExpect(this.threex3.piecesConnected(this.threex3.board.get(0).get(0),
-//        this.threex3.board.get(1).get(0)), false);
-//    this.threex3.onMouseClicked(new Posn(10, 60), "LeftButton");
-//    t.checkExpect(this.threex3.piecesConnected(this.threex3.board.get(0).get(0),
-//        this.threex3.board.get(0).get(1)), true);
-//    t.checkExpect(this.fourx4.piecesConnected(this.fourx4.board.get(2).get(2),
-//        this.fourx4.board.get(2).get(3)), true);
-//    this.fourx4.onMouseClicked(
-//        new Posn(2 * GamePiece.CELL_LENGTH + 5, 3 * GamePiece.CELL_LENGTH + 5), "LeftButton");
-//    t.checkExpect(this.fourx4.piecesConnected(this.fourx4.board.get(2).get(2),
-//        this.fourx4.board.get(2).get(3)), true);
-//  }
+  void testPiecesConnected(Tester t) {
+    initData();
+    t.checkExpect(this.threex3.piecesConnected(this.threex3.board.get(0).get(0),
+        this.threex3.board.get(1).get(0)), false);
+    this.threex3.onMouseClicked(new Posn(10, 60), "LeftButton");
+    t.checkExpect(this.threex3.piecesConnected(this.threex3.board.get(0).get(0),
+        this.threex3.board.get(0).get(1)), true);
+    t.checkExpect(this.fourx4.piecesConnected(this.fourx4.board.get(2).get(2),
+        this.fourx4.board.get(2).get(3)), true);
+    this.fourx4.onMouseClicked(
+        new Posn(2 * GamePiece.CELL_LENGTH + 5, 3 * GamePiece.CELL_LENGTH + 5), "LeftButton");
+    t.checkExpect(this.fourx4.piecesConnected(this.fourx4.board.get(2).get(2),
+        this.fourx4.board.get(2).get(3)), true);
+  }
 
-//  void testDrawPiece(Tester t) {
-//    initData();
-//    LineImage vertLine = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2), Color.ORANGE);
-//    LineImage horLine = new LineImage(new Posn(GamePiece.CELL_LENGTH / 2, 0), Color.ORANGE);
-//    // Testing top right piece
-//    WorldImage outlineTopRight = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
-//        OutlineMode.OUTLINE, Color.BLACK);
-//    WorldImage resultTopRight = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
-//        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
-//    resultTopRight = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        resultTopRight);
-//    resultTopRight = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        resultTopRight);
-//    // Testing 4-way connection:
-//    WorldImage outline4way = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
-//        OutlineMode.OUTLINE, Color.BLACK);
-//    WorldImage result4way = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
-//        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
-//    result4way = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        result4way);
-//    result4way = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        result4way);
-//    result4way = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.TOP, vertLine, 0, 0,
-//        result4way);
-//    result4way = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLine, 0, 0,
-//        result4way);
-//
-//    WorldImage outlinestar = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
-//        OutlineMode.OUTLINE, Color.BLACK);
-//    WorldImage resultstar = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
-//        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
-//    resultstar = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        resultstar);
-//    resultstar = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        resultstar);
-//    resultstar = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.TOP, vertLine, 0, 0,
-//        resultstar);
-//    resultstar = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLine, 0, 0,
-//        resultstar);
-//    WorldImage star = new StarImage(15, OutlineMode.SOLID, Color.CYAN);
-//    resultstar = new OverlayImage(star, resultstar);
-//
-//    // Top right game piece
-//    t.checkExpect(this.fivex5.board.get(0).get(0).drawPiece(),
-//        new OverlayImage(outlineTopRight, resultTopRight));
-//    // Two down (4-way connection)
-//    t.checkExpect(this.fivex5.board.get(0).get(2).drawPiece(),
-//        new OverlayImage(outline4way, resultTopRight));
-//    // Testing the star (middle) piece
-//    t.checkExpect(this.fivex5.board.get(2).get(2).drawPiece(),
-//        new OverlayImage(outlinestar, resultstar));
-//  }
+  void testDrawPiece(Tester t) {
+    initData();
+    LineImage vertLine = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2), Color.ORANGE);
+    LineImage horLine = new LineImage(new Posn(GamePiece.CELL_LENGTH / 2, 0), Color.ORANGE);
+    // Testing top right piece
+    WorldImage outlineTopRight = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
+        OutlineMode.OUTLINE, Color.BLACK);
+    WorldImage resultTopRight = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
+        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
+    resultTopRight = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
+        resultTopRight);
+    resultTopRight = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
+        resultTopRight);
+    // Testing 4-way connection:
+    WorldImage outline4way = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
+        OutlineMode.OUTLINE, Color.BLACK);
+    WorldImage result4way = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
+        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
+    result4way = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
+        result4way);
+    result4way = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
+        result4way);
+    result4way = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.TOP, vertLine, 0, 0,
+        result4way);
+    result4way = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLine, 0, 0,
+        result4way);
+
+    WorldImage outlinestar = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
+        OutlineMode.OUTLINE, Color.BLACK);
+    WorldImage resultstar = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
+        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
+    resultstar = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
+        resultstar);
+    resultstar = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
+        resultstar);
+    resultstar = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.TOP, vertLine, 0, 0,
+        resultstar);
+    resultstar = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLine, 0, 0,
+        resultstar);
+    WorldImage star = new StarImage(15, OutlineMode.SOLID, Color.CYAN);
+    resultstar = new OverlayImage(star, resultstar);
+
+    // Top right game piece
+    t.checkExpect(this.fivex5.board.get(0).get(0).drawPiece(),
+        new OverlayImage(outlineTopRight, resultTopRight));
+    // Two down (4-way connection)
+    t.checkExpect(this.fivex5.board.get(0).get(2).drawPiece(),
+        new OverlayImage(outline4way, resultTopRight));
+    // Testing the star (middle) piece
+    t.checkExpect(this.fivex5.board.get(2).get(2).drawPiece(),
+        new OverlayImage(outlinestar, resultstar));
+  }
 
   // Testing rotation for various game pieces.
-//  void testRotate(Tester t) {
-//    initData();
-//    // top right piece
-//    t.checkExpect(this.fivex5.board.get(0).get(0).left && this.fivex5.board.get(0).get(0).right,
-//        true);
-//    this.fivex5.board.get(0).get(0).rotate();
-//    t.checkExpect(this.fivex5.board.get(0).get(0).left || this.fivex5.board.get(0).get(0).right,
-//        false);
-//    // piece with coord (2,0)
-//    t.checkExpect(this.fivex5.board.get(3).get(0).top || this.fivex5.board.get(3).get(0).bottom,
-//        false);
-//    this.fivex5.board.get(3).get(0).rotate();
-//    t.checkExpect(this.fivex5.board.get(3).get(0).top && this.fivex5.board.get(3).get(0).bottom,
-//        true);
-//    // star/4-way piece.
-//    t.checkExpect(this.fivex5.board.get(2).get(2).bottom && this.fivex5.board.get(2).get(2).top
-//        && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
-//    this.fivex5.board.get(0).get(0).rotate();
-//    t.checkExpect(this.fivex5.board.get(2).get(2).bottom && this.fivex5.board.get(2).get(2).top
-//        && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
-//  }
+  void testRotate(Tester t) {
+    initData();
+    // top right piece
+    t.checkExpect(this.fivex5.board.get(0).get(0).left && this.fivex5.board.get(0).get(0).right,
+        true);
+    this.fivex5.board.get(0).get(0).rotate();
+    t.checkExpect(this.fivex5.board.get(0).get(0).left || this.fivex5.board.get(0).get(0).right,
+        false);
+    // piece with coord (2,0)
+    t.checkExpect(this.fivex5.board.get(3).get(0).top || this.fivex5.board.get(3).get(0).bottom,
+        false);
+    this.fivex5.board.get(3).get(0).rotate();
+    t.checkExpect(this.fivex5.board.get(3).get(0).top && this.fivex5.board.get(3).get(0).bottom,
+        true);
+    // star/4-way piece.
+    t.checkExpect(this.fivex5.board.get(2).get(2).bottom && this.fivex5.board.get(2).get(2).top
+        && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
+    this.fivex5.board.get(0).get(0).rotate();
+    t.checkExpect(this.fivex5.board.get(2).get(2).bottom && this.fivex5.board.get(2).get(2).top
+        && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
+  }
 }
