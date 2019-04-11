@@ -4,13 +4,6 @@ import javalib.impworld.*;
 import java.awt.Color;
 import javalib.worldimages.*;
 
-/*
- * THINGS I CHANGED FOR FRACTALS:
- * 1. (minor) Moved star initialization to the constructor from the fractalBoard() method. 
- * It doesn't need to be initialized every time it recurs.
- * 2. 
- */
-
 class LightEmAll extends World {
 
   // a list of columns of GamePieces
@@ -26,11 +19,15 @@ class LightEmAll extends World {
   int powerRow;
   int powerCol;
   int radius;
-  HashMap<GamePiece, Integer> graph = new HashMap<GamePiece, Integer>();
+  HashMap<GamePiece, Integer> graph;
 
   LightEmAll(int numRows, int numCols, int boardType) {
     this.width = numCols * GamePiece.CELL_LENGTH;
     this.height = numRows * GamePiece.CELL_LENGTH;
+    this.nodes = new ArrayList<GamePiece>();
+    this.getNodes();
+    this.graph = new HashMap<GamePiece, Integer>();
+    this.initHash();
 
     // 0 is manualGeneration, 1 is fractal, 2 is random
     if (boardType == 0) {
@@ -43,11 +40,8 @@ class LightEmAll extends World {
       this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
       this.powerCol = this.width / GamePiece.CELL_LENGTH / 2;
       this.powerRow = 0;
+      this.radius = this.calcRadius();
     }
-    this.nodes = new ArrayList<GamePiece>();
-    this.getNodes();
-    this.initHash();
-
   }
 
   void getNodes() {
@@ -119,6 +113,12 @@ class LightEmAll extends World {
     return lastFound;
   }
 
+  int calcRadius() {
+    GamePiece lastFound = setDepths(this.powerRow, this.powerCol);
+    lastFound = setDepths(lastFound.row, lastFound.col);
+    return this.graph.get(lastFound);
+  }
+
   // Makes the scene with all the game pieces drawn.
   public WorldScene makeScene() {
     WorldScene scene = new WorldScene(this.width, this.height);
@@ -160,8 +160,7 @@ class LightEmAll extends World {
     return boardResult;
   }
 
-  // Creates the game board
-  // Currently written with a manual generation that always makes the same board
+  // Creates the game board with empty cells
   public ArrayList<ArrayList<GamePiece>> manualBoard() {
     ArrayList<ArrayList<GamePiece>> boardResult = new ArrayList<ArrayList<GamePiece>>();
 
@@ -182,7 +181,7 @@ class LightEmAll extends World {
 
     if (numRows == 1 || numCols == 1) {
     }
-    else {
+    else { // Makes the U shape for the current portion of the graph
       // Top left of U
       this.board.get(startRow).get(startCol).bottom = true;
       // Bottom left
@@ -206,15 +205,16 @@ class LightEmAll extends World {
         this.board.get(startRow + numRows - 1).get(i).right = true;
       }
     }
+
     // When there is only one row, all pieces should have the top field be true.
     if (numRows == 1 && numCols > 2) {
-      this.fractalBoard(1, (int)Math.ceil(numCols/2), currRow, currCol);
-      this.fractalBoard(1, numCols/2, currRow, (int)Math.ceil(currCol/2));
+      this.fractalBoard(1, (int) Math.ceil(numCols / 2), currRow, currCol);
+      this.fractalBoard(1, numCols / 2, currRow, (int) Math.ceil(currCol / 2));
     }
     else if (numRows == 1 && numCols == 2) {
       this.board.get(startRow).get(startCol).right = true;
       this.board.get(startRow).get(startCol + 1).left = true;
-      
+
     }
     else if (numRows == 2 && numCols == 1) {
       this.board.get(startRow).get(startCol).bottom = true;
@@ -263,10 +263,10 @@ class LightEmAll extends World {
     if (button.equals("LeftButton")
         && (posY <= this.height && 0 <= posY && posX <= this.width && 0 <= posX)) {
       gp.rotate();
-      System.out.println("On click posn: (" + posX + ", " + posY + ")");
     }
   }
 
+  // Handles all keys clicked (to move the powerstation)
   public void onKeyEvent(String key) {
 
     if (key.equals("left")) {
@@ -433,7 +433,7 @@ class ExamplesGame {
 
   void initData() {
     // To use with bigbang
-    test = new LightEmAll(10,1, 1);
+    test = new LightEmAll(7, 7, 1);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3, 0);
     // To test a 4x4 grid
