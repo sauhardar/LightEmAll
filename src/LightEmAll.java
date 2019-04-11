@@ -4,6 +4,13 @@ import javalib.impworld.*;
 import java.awt.Color;
 import javalib.worldimages.*;
 
+/*
+ * THINGS I CHANGED FOR FRACTALS:
+ * 1. (minor) Moved star initialization to the constructor from the fractalBoard() method. 
+ * It doesn't need to be initialized every time it recurs.
+ * 2. 
+ */
+
 class LightEmAll extends World {
 
   // a list of columns of GamePieces
@@ -32,10 +39,15 @@ class LightEmAll extends World {
     else if (boardType == 1) {
       this.board = this.manualBoard();
       this.fractalBoard(numRows, numCols, 0, 0);
+      // Moved the initialization of the power station to the constructor.
+      this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
+      this.powerCol = this.width / GamePiece.CELL_LENGTH / 2;
+      this.powerRow = 0;
     }
     this.nodes = new ArrayList<GamePiece>();
     this.getNodes();
     this.initHash();
+
   }
 
   void getNodes() {
@@ -168,32 +180,41 @@ class LightEmAll extends World {
     int startRow = currRow;
     int startCol = currCol;
 
-    // Top left of U
-    this.board.get(startRow).get(startCol).bottom = true;
-    // Bottom left
-    this.board.get(startRow + numRows - 1).get(startCol).right = true;
-    this.board.get(startRow + numRows - 1).get(startCol).top = true;
-    // Bottom right
-    this.board.get(startRow + numRows - 1).get(startCol + numCols - 1).left = true;
-    this.board.get(startRow + numRows - 1).get(startCol + numCols - 1).top = true;
-    // Top right
-    this.board.get(startRow).get(startCol + numCols - 1).bottom = true;
-    // Sides of U
-    for (int i = startRow + 1; i < startRow + numRows - 1; i++) {
-      this.board.get(i).get(startCol).top = true;
-      this.board.get(i).get(startCol).bottom = true;
-      this.board.get(i).get(startCol + numCols - 1).top = true;
-      this.board.get(i).get(startCol + numCols - 1).bottom = true;
+    if (numRows == 1 || numCols == 1) {
     }
-    // Bottom row
-    for (int i = startCol + 1; i < startCol + numCols - 1; i++) {
-      this.board.get(startRow + numRows - 1).get(i).left = true;
-      this.board.get(startRow + numRows - 1).get(i).right = true;
+    else {
+      // Top left of U
+      this.board.get(startRow).get(startCol).bottom = true;
+      // Bottom left
+      this.board.get(startRow + numRows - 1).get(startCol).right = true;
+      this.board.get(startRow + numRows - 1).get(startCol).top = true;
+      // Bottom right
+      this.board.get(startRow + numRows - 1).get(startCol + numCols - 1).left = true;
+      this.board.get(startRow + numRows - 1).get(startCol + numCols - 1).top = true;
+      // Top right
+      this.board.get(startRow).get(startCol + numCols - 1).bottom = true;
+      // Sides of U
+      for (int i = startRow + 1; i < startRow + numRows - 1; i++) {
+        this.board.get(i).get(startCol).top = true;
+        this.board.get(i).get(startCol).bottom = true;
+        this.board.get(i).get(startCol + numCols - 1).top = true;
+        this.board.get(i).get(startCol + numCols - 1).bottom = true;
+      }
+      // Bottom row
+      for (int i = startCol + 1; i < startCol + numCols - 1; i++) {
+        this.board.get(startRow + numRows - 1).get(i).left = true;
+        this.board.get(startRow + numRows - 1).get(i).right = true;
+      }
     }
-
-    if (numRows == 1 && numCols == 2) {
+    // When there is only one row, all pieces should have the top field be true.
+    if (numRows == 1 && numCols > 2) {
+      this.fractalBoard(1, (int)Math.ceil(numCols/2), currRow, currCol);
+      this.fractalBoard(1, numCols/2, currRow, (int)Math.ceil(currCol/2));
+    }
+    else if (numRows == 1 && numCols == 2) {
       this.board.get(startRow).get(startCol).right = true;
       this.board.get(startRow).get(startCol + 1).left = true;
+      
     }
     else if (numRows == 2 && numCols == 1) {
       this.board.get(startRow).get(startCol).bottom = true;
@@ -207,29 +228,12 @@ class LightEmAll extends World {
     }
     else if (numRows == 3 && numCols == 3) {
       this.board.get(startRow + 1).get(startCol).right = true;
-      this.board.get(startRow).get(startCol + 1).bottom = true;
       this.board.get(startRow + 1).get(startCol + 1).left = true;
       this.board.get(startRow + 1).get(startCol + 1).top = true;
-    }
-    else if (numRows == 3 && numCols == 4) {
       this.board.get(startRow).get(startCol + 1).bottom = true;
-      this.board.get(startRow + 1).get(startCol).right = true;
-      this.board.get(startRow + 1).get(startCol + 1).left = true;
-      this.board.get(startRow + 1).get(startCol + 1).top = true;
-      this.board.get(startRow + 1).get(startCol + 2).right = true;
-      this.board.get(startRow + 1).get(startCol + 2).top = true;
-      this.board.get(startRow).get(startCol + 2).bottom = true;
-      this.board.get(startRow + 1).get(startCol + 3).left = true;
+
     }
-    else if (numRows == 4 && numCols == 3) {
-      this.board.get(startRow).get(startCol + 1).bottom = true;
-      this.board.get(startRow + 1).get(startCol + 1).left = true;
-      this.board.get(startRow + 1).get(startCol + 1).top = true;
-      this.board.get(startRow + 1).get(startCol).right = true;
-      this.board.get(startRow + 2).get(startCol + 1).bottom = true;
-      this.board.get(startRow + 3).get(startCol + 1).top = true;
-    }
-    else if (numRows >= 4 && numCols >= 4) {
+    else if (numRows >= 4 || numCols >= 4) {
       // Top left quadrant
       fractalBoard((int) Math.ceil(numRows / 2.0), (int) Math.ceil(numCols / 2.0), currRow,
           currCol);
@@ -246,7 +250,6 @@ class LightEmAll extends World {
       fractalBoard(numRows / 2, numCols / 2, currRow + (int) Math.ceil(numRows / 2.0),
           currCol + (int) Math.ceil(numCols / 2.0));
     }
-
     this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
     this.powerCol = this.width / GamePiece.CELL_LENGTH / 2;
     this.powerRow = 0;
@@ -309,15 +312,9 @@ class LightEmAll extends World {
   }
 
   /*
-   * NOT DONE - NOT NEEDED FOR PART 2
-   * public WorldEnd worldEnds() {
-   * if (allConnected()) {
-   * return new WorldEnd(true, this.finalScene());
-   * }
-   * else {
-   * return new WorldEnd(false, this.makeScene());
-   * }
-   * }
+   * NOT DONE - NOT NEEDED FOR PART 2 public WorldEnd worldEnds() { if
+   * (allConnected()) { return new WorldEnd(true, this.finalScene()); } else {
+   * return new WorldEnd(false, this.makeScene()); } }
    */
 
   public WorldScene finalScene() {
@@ -436,7 +433,7 @@ class ExamplesGame {
 
   void initData() {
     // To use with bigbang
-    test = new LightEmAll(4, 4, 1);
+    test = new LightEmAll(10,1, 1);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3, 0);
     // To test a 4x4 grid
