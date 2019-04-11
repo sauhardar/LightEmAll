@@ -35,6 +35,7 @@ class LightEmAll extends World {
     }
     this.nodes = new ArrayList<GamePiece>();
     this.getNodes();
+    this.initHash();
   }
 
   void getNodes() {
@@ -49,6 +50,61 @@ class LightEmAll extends World {
     for (GamePiece gp : this.nodes) {
       this.graph.put(gp, -1);
     }
+  }
+
+  // Sets every value to the correct distance and returns the last value in BFS
+  GamePiece setDepths(int yPos, int xPos) {
+    GamePiece lastFound = this.board.get(yPos).get(xPos);
+
+    int depth = 0;
+
+    // Worklist for BFS
+    ArrayList<GamePiece> worklist = new ArrayList<GamePiece>();
+    worklist.add(this.board.get(yPos).get(xPos));
+
+    // Accumulate all the GamePieces already visited
+    ArrayList<GamePiece> soFar = new ArrayList<GamePiece>();
+    soFar.add(this.board.get(yPos).get(xPos));
+
+    // Distance from home is zero for the home node
+    this.graph.put(this.board.get(yPos).get(xPos), depth);
+
+    while (!worklist.isEmpty()) {
+      GamePiece listFirst = worklist.get(0);
+      int rowVal = listFirst.row;
+      int colVal = listFirst.col;
+      depth++;
+
+      // Check ABOVE target
+      if (this.piecesConnected(listFirst, this.board.get(rowVal - 1).get(colVal))
+          && !(soFar.contains(this.board.get(rowVal - 1).get(colVal)))) {
+        worklist.add(this.board.get(rowVal - 1).get(colVal));
+        this.graph.put(this.board.get(rowVal - 1).get(colVal), depth);
+      }
+
+      // Check BELOW target
+      if (this.piecesConnected(listFirst, this.board.get(rowVal + 1).get(colVal))
+          && !(soFar.contains(this.board.get(rowVal + 1).get(colVal)))) {
+        worklist.add(this.board.get(rowVal + 1).get(colVal));
+        this.graph.put(this.board.get(rowVal + 1).get(colVal), depth);
+      }
+
+      // Check LEFT OF target
+      if (this.piecesConnected(listFirst, this.board.get(rowVal).get(colVal - 1))
+          && !(soFar.contains(this.board.get(rowVal).get(colVal - 1)))) {
+        worklist.add(this.board.get(rowVal).get(colVal - 1));
+        this.graph.put(this.board.get(rowVal).get(colVal - 1), depth);
+      }
+
+      // Check RIGHT OF target
+      if (this.piecesConnected(listFirst, this.board.get(rowVal).get(colVal + 1))
+          && !(soFar.contains(this.board.get(rowVal).get(colVal + 1)))) {
+        worklist.add(this.board.get(rowVal).get(colVal + 1));
+        this.graph.put(this.board.get(rowVal).get(colVal + 1), depth);
+      }
+      worklist.remove(0);
+    }
+    return lastFound;
   }
 
   // Makes the scene with all the game pieces drawn.
