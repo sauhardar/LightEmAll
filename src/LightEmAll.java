@@ -47,8 +47,8 @@ class LightEmAll extends World {
     this.getPowered();
   }
 
-  // EFFECT: Changes the appropriate GamePieces' isPowered fields
-  // Determines if each GamePiece should be lit up
+  // EFFECT: Sets isPowered to true if the cell has power
+  // Runs through the GamePieces and determines if they are powered
   void getPowered() {
     this.setDepths(this.powerRow, this.powerCol);
 
@@ -61,7 +61,13 @@ class LightEmAll extends World {
         gp.isPowered = false;
       }
       gp.distToPS = this.graph.get(gp);
+      // System.out.println("(" + gp.col + ", " + gp.row + ") " + gp.distToPS);
     }
+  }
+
+  // Determines if two GamePieces are equal (the same)
+  boolean samePiece(GamePiece gp1, GamePiece gp2) {
+    return (gp1.row == gp2.row) && (gp1.col == gp2.col);
   }
 
   // Determines if two GamePieces are connected
@@ -85,7 +91,7 @@ class LightEmAll extends World {
       if (rowVal - 1 > -1 && !(soFar.contains(this.board.get(rowVal - 1).get(colVal))
           && this.twoPiecesConnected(listFirst, this.board.get(rowVal - 1).get(colVal)))) {
 
-        if (this.board.get(rowVal - 1).get(colVal).equals(other)) {
+        if (samePiece(this.board.get(rowVal - 1).get(colVal), other)) {
           return true;
         }
         worklist.add(this.board.get(rowVal - 1).get(colVal));
@@ -96,7 +102,7 @@ class LightEmAll extends World {
       if (rowVal + 1 < this.height / GamePiece.CELL_LENGTH
           && !(soFar.contains(this.board.get(rowVal + 1).get(colVal))
               && this.twoPiecesConnected(listFirst, this.board.get(rowVal + 1).get(colVal)))) {
-        if (this.board.get(rowVal + 1).get(colVal).equals(other)) {
+        if (samePiece(this.board.get(rowVal + 1).get(colVal), other)) {
           return true;
         }
         worklist.add(this.board.get(rowVal + 1).get(colVal));
@@ -107,7 +113,7 @@ class LightEmAll extends World {
       if (colVal - 1 > -1 && !(soFar.contains(this.board.get(rowVal).get(colVal - 1))
           && this.twoPiecesConnected(listFirst, this.board.get(rowVal).get(colVal - 1)))) {
 
-        if (this.board.get(rowVal).get(colVal - 1).equals(other)) {
+        if (samePiece(this.board.get(rowVal).get(colVal - 1), other)) {
           return true;
         }
 
@@ -120,7 +126,7 @@ class LightEmAll extends World {
           && !(soFar.contains(this.board.get(rowVal).get(colVal + 1))
               && this.twoPiecesConnected(listFirst, this.board.get(rowVal).get(colVal + 1)))) {
 
-        if (this.board.get(rowVal).get(colVal + 1).equals(other)) {
+        if (samePiece(this.board.get(rowVal).get(colVal + 1), other)) {
           return true;
         }
 
@@ -139,8 +145,7 @@ class LightEmAll extends World {
     // target is ABOVE other
     if (target.row + 1 == other.row && target.col == other.col) {
       return target.bottom && other.top;
-    }
-    // target is BELOW other
+    } // target is BELOW other
     else if (target.row - 1 == other.row && target.col == other.col) {
       return target.top && other.bottom;
     } // target is on LEFT of other
@@ -152,9 +157,8 @@ class LightEmAll extends World {
     }
     return false;
   }
-  
-  // EFFECT: Puts every single GamePiece in the board into the 
-  // field this.nodes
+
+  // Flattes the graph into a list of GamePieces
   void getNodes() {
     for (ArrayList<GamePiece> row : this.board) {
       for (GamePiece gp : row) {
@@ -163,8 +167,7 @@ class LightEmAll extends World {
     }
   }
 
-  // EFFECT: For every single GamePiece in the game, adds it to the 
-  // HashMap this.graph with the value of -1 (initially)
+  // Creates the initial hashmap with all distances set to -1
   void initHash() {
     for (GamePiece gp : this.nodes) {
       this.graph.put(gp, -1);
@@ -195,8 +198,7 @@ class LightEmAll extends World {
       boolean depthIncreased = false;
 
       // Check ABOVE target
-      if (rowVal - 1 > -1
-          && this.twoPiecesConnected(listFirst, this.board.get(rowVal - 1).get(colVal))
+      if (rowVal > 0 && this.twoPiecesConnected(listFirst, this.board.get(rowVal - 1).get(colVal))
           && !(soFar.contains(this.board.get(rowVal - 1).get(colVal)))) {
 
         worklist.add(this.board.get(rowVal - 1).get(colVal));
@@ -229,8 +231,7 @@ class LightEmAll extends World {
       }
 
       // Check LEFT OF target
-      if (colVal - 1 > -1
-          && this.twoPiecesConnected(listFirst, this.board.get(rowVal).get(colVal - 1))
+      if (colVal > 0 && this.twoPiecesConnected(listFirst, this.board.get(rowVal).get(colVal - 1))
           && !(soFar.contains(this.board.get(rowVal).get(colVal - 1)))) {
 
         worklist.add(this.board.get(rowVal).get(colVal - 1));
@@ -265,6 +266,7 @@ class LightEmAll extends World {
       if (depthIncreased) {
         depth++;
       }
+
       worklist.remove(0);
     }
 
@@ -335,7 +337,6 @@ class LightEmAll extends World {
     return boardResult;
   }
 
-  // Creates the game board using a subdivision algorithim for factal-like wiring
   // Creates the game board using a subdivision algorithm for fractal-like wiring
   public void fractalBoard(int numRows, int numCols, int currRow, int currCol) {
     int startRow = currRow;
@@ -344,6 +345,7 @@ class LightEmAll extends World {
     if (numRows == 1 || numCols == 1) {
       // At the base case of one row or one column, irrespective
       // of the other dimension, the program should stop. No U should be drawn.
+      // This is done because we shouldn't do anything if it is just one row/col
     }
 
     // Initially draw a U-shaped wire formation around the outside of the given grid
@@ -374,6 +376,7 @@ class LightEmAll extends World {
     }
 
     if (numRows == 1 || numCols == 1 || numCols == 2) {
+      // We don't do anything if it is just one row/col or two columns
     }
     // When there is only one row, all pieces should have the top field be true.
     else if (numRows == 1 && numCols > 2) {
@@ -475,6 +478,7 @@ class LightEmAll extends World {
     System.out.println("Post-key star posn: (" + this.powerCol + ", " + this.powerRow + ")");
   }
 
+  // Determines if the game is won, else keep going
   public WorldEnd worldEnds() {
     if (allConnected()) {
       return new WorldEnd(true, this.finalScene());
@@ -484,20 +488,21 @@ class LightEmAll extends World {
     }
   }
 
+  // Determines if all GamePieces are powered up and connected to the powerstation
   boolean allConnected() {
     for (GamePiece gp : this.nodes) {
       if (!gp.isPowered) {
+        // System.out.println("Row: " + gp.row + " Col: " + gp.col);
         return false;
       }
     }
     return true;
   }
 
-  // The end scene that congratulates the user on winning. User can only win or
-  // keep playing.
+  // The end scene that congratulates the user if game is over (ie. won)
   public WorldScene finalScene() {
     WorldScene ws = this.makeScene();
-    ws.placeImageXY(new TextImage("You won", 35, Color.MAGENTA), this.width / 2, this.height / 2);
+    ws.placeImageXY(new TextImage("Winner", 20, Color.MAGENTA), this.width / 2, this.height / 2);
     return ws;
   }
 }
@@ -528,6 +533,7 @@ class GamePiece {
     this.distToPS = 0;
   }
 
+  // Draws each individual GamePiece
   WorldImage drawPiece(int radius) {
     WorldImage outline = new RectangleImage(CELL_LENGTH, CELL_LENGTH, OutlineMode.OUTLINE,
         Color.BLACK);
@@ -536,8 +542,6 @@ class GamePiece {
         new EmptyImage());
 
     if (this.isPowered) {
-      System.out
-          .println("Distance: " + this.distToPS + " G-val: " + (this.distToPS * 255 / radius));
       LineImage vertLine = new LineImage(new Posn(0, CELL_LENGTH / 2),
           new Color(255, 255 - (this.distToPS * 255 / radius), 0));
       LineImage horLine = new LineImage(new Posn(CELL_LENGTH / 2, 0),
@@ -564,7 +568,8 @@ class GamePiece {
       }
     }
     else {
-      System.out.println("not in: " + this.distToPS);
+      // System.out.println("not in: (" + this.col + ", " + this.row + ") " +
+      // this.distToPS);
       LineImage vertLineNP = new LineImage(new Posn(0, CELL_LENGTH / 2), Color.GRAY);
       LineImage horLineNP = new LineImage(new Posn(CELL_LENGTH / 2, 0), Color.GRAY);
 
@@ -626,8 +631,8 @@ class ExamplesGame {
 
   void initData() {
     // To use with big-bang
-    test = new LightEmAll(4,4, 1);
-    twox2Power = new LightEmAll(2,2, 1);
+    test = new LightEmAll(4, 4, 1);
+    twox2Power = new LightEmAll(2, 2, 1);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3, 0);
     // To test a 3x3 grid Powered
@@ -639,14 +644,14 @@ class ExamplesGame {
     // To test a 5x5 grid
     fivex5 = new LightEmAll(5, 5, 0);
     // To test a 4x4 grid that
-    fivex5Power = new LightEmAll(5,5, 1);
-    
+    fivex5Power = new LightEmAll(5, 5, 1);
+
   }
 
   // Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-    //test.bigBang(test.width, test.height, .003);
+    test.bigBang(test.width, test.height, .003);
   }
 
   // Testing the makeScene() method
@@ -654,25 +659,25 @@ class ExamplesGame {
     initData();
     // testing 3x3 powered
     WorldScene testImage3x3 = new WorldScene(this.threex3Power.width, this.threex3Power.height);
-    
-    for (ArrayList<GamePiece> row: this.threex3Power.board) {
+
+    for (ArrayList<GamePiece> row : this.threex3Power.board) {
       for (GamePiece cell : row) {
         testImage3x3.placeImageXY(cell.drawPiece(4),
             cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
             cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
       }
     }
-    
+
     // testing 4x4 powered
     WorldScene testImage4x4 = new WorldScene(this.fourx4Power.width, this.fourx4Power.height);
-    for (ArrayList<GamePiece> row: this.fourx4Power.board) {
+    for (ArrayList<GamePiece> row : this.fourx4Power.board) {
       for (GamePiece cell : row) {
         testImage4x4.placeImageXY(cell.drawPiece(6),
             cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
             cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
       }
     }
-    
+
     t.checkExpect(this.threex3Power.makeScene(), testImage3x3);
     t.checkExpect(this.fourx4Power.makeScene(), testImage4x4);
   }
@@ -755,21 +760,21 @@ class ExamplesGame {
   // Testing the method manualBoad()
   void testManualBoard(Tester t) {
     initData();
-    
+
     ArrayList<ArrayList<GamePiece>> answer = new ArrayList<ArrayList<GamePiece>>();
     ArrayList<GamePiece> firstRow = new ArrayList<GamePiece>();
     ArrayList<GamePiece> secRow = new ArrayList<GamePiece>();
     ArrayList<GamePiece> thirdRow = new ArrayList<GamePiece>();
     GamePiece one = new GamePiece(0, 0, false, false, false, false, false);
     GamePiece two = new GamePiece(0, 1, false, false, false, false, false);
-    GamePiece three = new GamePiece(0,2, false, false, false, false, false);
+    GamePiece three = new GamePiece(0, 2, false, false, false, false, false);
     GamePiece four = new GamePiece(1, 0, false, false, false, false, false);
     GamePiece five = new GamePiece(1, 1, false, false, false, false, false);
     GamePiece six = new GamePiece(1, 2, false, false, false, false, false);
     GamePiece seven = new GamePiece(2, 0, false, false, false, false, false);
     GamePiece eight = new GamePiece(2, 1, false, false, false, false, false);
-    GamePiece nine = new GamePiece(2,2, false, false, false, false, false);
-    
+    GamePiece nine = new GamePiece(2, 2, false, false, false, false, false);
+
     firstRow.add(one);
     firstRow.add(two);
     firstRow.add(three);
@@ -779,13 +784,13 @@ class ExamplesGame {
     thirdRow.add(seven);
     thirdRow.add(eight);
     thirdRow.add(nine);
-    
+
     answer.addAll(Arrays.asList(firstRow, secRow, thirdRow));
-    
+
     t.checkExpect(this.threex3.manualBoard(), answer);
-    
+
   }
-  
+
   // Testing the whether clicking rotates the game pieces correctly.
   void testOnMouseClicked(Tester t) {
     initData();
@@ -818,18 +823,18 @@ class ExamplesGame {
         new Posn(2 * GamePiece.CELL_LENGTH + 5, 3 * GamePiece.CELL_LENGTH + 5), "LeftButton");
     t.checkExpect(this.fourx4.twoPiecesConnected(this.fourx4.board.get(2).get(2),
         this.fourx4.board.get(2).get(3)), true);
-    
+
     t.checkExpect(this.fivex5Power.twoPiecesConnected(this.fivex5Power.board.get(0).get(2),
         this.fivex5Power.board.get(0).get(1)), false);
     t.checkExpect(this.fivex5Power.twoPiecesConnected(this.fivex5Power.board.get(0).get(2),
         this.fivex5Power.board.get(1).get(2)), true);
     t.checkExpect(this.fivex5Power.twoPiecesConnected(this.fivex5Power.board.get(0).get(2),
         this.fivex5Power.board.get(2).get(1)), false);
-    
-    t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(0).get(0), 
+
+    t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(0).get(0),
         this.fourx4Power.board.get(1).get(0)), true);
     this.fourx4Power.board.get(1).get(0).rotate();
-    t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(0).get(0), 
+    t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(0).get(0),
         this.fourx4Power.board.get(1).get(0)), false);
   }
 
@@ -867,6 +872,7 @@ class ExamplesGame {
   }
 
   // testing piecesConnected()
+  /* THIS IS NOT DONE */
   void testPiecesConnected(Tester t) {
     initData();
     t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(0).get(0),
@@ -875,9 +881,9 @@ class ExamplesGame {
     this.fourx4Power.board.get(1).get(0).rotate();
     this.fourx4Power.board.get(1).get(0).rotate();
     // t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(0).get(0),
-    //    this.fourx4Power.board.get(3).get(0)), false);
+    // this.fourx4Power.board.get(3).get(0)), false);
   }
-  
+
   // Testing method getNodes()
   void testGetNodes(Tester t) {
     initData();
@@ -887,7 +893,7 @@ class ExamplesGame {
     // There are and should be 16 because this is a 4x4
     t.checkExpect(this.fourx4Power.nodes.size(), 16);
   }
-  
+
   // Testing initHas()
   void testInitHas(Tester t) {
     initData();
@@ -899,36 +905,31 @@ class ExamplesGame {
     t.checkExpect(this.fourx4Power.graph.get(this.fourx4Power.board.get(0).get(0)), -1);
     t.checkExpect(this.fourx4Power.graph.get(this.fourx4Power.board.get(0).get(3)), -1);
   }
-  
+
   // Testing setDepths((
   void testSetDepths(Tester t) {
     initData();
     // Finds the farthest GamePiece from the given GamePiece
-    t.checkExpect(this.fourx4Power.setDepths(0, 2), 
-        this.fourx4Power.board.get(0).get(1));
-    t.checkExpect(this.fourx4Power.setDepths(0, 0), 
-        this.fourx4Power.board.get(0).get(2));
-    t.checkExpect(this.fourx4Power.setDepths(0, 1), 
-        this.fourx4Power.board.get(0).get(2));
-    t.checkExpect(this.fourx4Power.setDepths(2, 0), 
-        this.fourx4Power.board.get(0).get(2));
-    t.checkExpect(this.fivex5Power.setDepths(0, 3), 
-        this.fivex5Power.board.get(0).get(2));
-    
+    t.checkExpect(this.fourx4Power.setDepths(0, 2), this.fourx4Power.board.get(0).get(1));
+    t.checkExpect(this.fourx4Power.setDepths(0, 0), this.fourx4Power.board.get(0).get(2));
+    t.checkExpect(this.fourx4Power.setDepths(0, 1), this.fourx4Power.board.get(0).get(2));
+    t.checkExpect(this.fourx4Power.setDepths(2, 0), this.fourx4Power.board.get(0).get(2));
+    t.checkExpect(this.fivex5Power.setDepths(0, 3), this.fivex5Power.board.get(0).get(2));
+
   }
-  
-  // Testing calcRadius 
+
+  // Testing calcRadius
   void testCalcRadius(Tester t) {
     initData();
     t.checkExpect(this.fourx4Power.calcRadius(), 6);
     // The answer to 5x5 should be 8, returning 10.
-    //t.checkExpect(this.fivex5Power.calcRadius(), 8);
+    // t.checkExpect(this.fivex5Power.calcRadius(), 8);
   }
-  
-  // testing fractalBoard() 
+
+  // Testing fractalBoard()
   void testFractalBoard(Tester t) {
     initData();
-    
+
     t.checkExpect(this.fourx4Power.board.get(0).get(2).powerStation, true);
     t.checkExpect(this.fourx4Power.board.get(0).get(2).bottom, true);
     t.checkExpect(this.fourx4Power.board.get(1).get(2).bottom, false);
@@ -940,98 +941,91 @@ class ExamplesGame {
     t.checkExpect(this.fourx4Power.board.get(3).get(2).bottom, false);
   }
 
-  // testing drawPiece()
+  // Testing drawPiece()
   void testDrawPiece(Tester t) {
     initData();
     // Top left peice that is not powered
     LineImage vertLineNP1 = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2), Color.GRAY);
-    WorldImage outline1 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.OUTLINE,
-        Color.BLACK);
-    WorldImage result1 = new OverlayImage(
-        new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY),
-        new EmptyImage());
-    
+    WorldImage outline1 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
+        OutlineMode.OUTLINE, Color.BLACK);
+    WorldImage result1 = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
+        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
+
     result1 = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLineNP1, 0, 0,
         result1);
-    
+
     result1 = new OverlayImage(outline1, result1);
-    
+
     // drawing a star
-    LineImage poweredVert = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2), new Color(255, 255, 0));
-    WorldImage outline2 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.OUTLINE,
-        Color.BLACK);
-    WorldImage result2 = new OverlayImage(
-        new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY),
-        new EmptyImage());
-    
+    LineImage poweredVert = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2),
+        new Color(255, 255, 0));
+    WorldImage outline2 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
+        OutlineMode.OUTLINE, Color.BLACK);
+    WorldImage result2 = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
+        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
+
     result2 = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, poweredVert, 0, 0,
         result2);
-    
+
     WorldImage star = new StarImage(15, OutlineMode.SOLID, Color.CYAN);
     result2 = new OverlayImage(star, result2);
-    
+
     result2 = new OverlayImage(outline2, result2);
-    
-    
+
     // drawing cell with top and right true with g value of 213
-    
+
     LineImage poweredvert2 = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2),
         new Color(255, 213, 0));
     LineImage poweredhor2 = new LineImage(new Posn(GamePiece.CELL_LENGTH / 2, 0),
         new Color(255, 213, 0));
-    
 
-    WorldImage outline3 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.OUTLINE,
-        Color.BLACK);
-    WorldImage result3 = new OverlayImage(
-        new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY),
-        new EmptyImage());
-    
+    WorldImage outline3 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
+        OutlineMode.OUTLINE, Color.BLACK);
+    WorldImage result3 = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
+        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
+
     result3 = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, poweredhor2, 0, 0,
         result3);
     result3 = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.TOP, poweredvert2, 0, 0,
         result3);
-    
-    
+
     result3 = new OverlayImage(outline3, result3);
-    
+
     t.checkExpect(this.fourx4Power.board.get(0).get(0).drawPiece(6), result1);
     t.checkExpect(this.fourx4Power.board.get(0).get(2).drawPiece(6), result2);
     t.checkExpect(this.fourx4Power.board.get(1).get(2).drawPiece(6), result3);
   }
-  
-  // testing worldEnds() 
- void testWorldEnds(Tester t) {
-   initData();
-   t.checkExpect(this.fourx4Power.worldEnds(), 
-       new WorldEnd(false, this.fourx4Power.makeScene()));
-   t.checkExpect(this.fivex5Power.worldEnds(), 
-       new WorldEnd(false, this.fivex5Power.makeScene()));
-   
-   this.twox2Power.onKeyEvent("down");
-   //t.checkExpect(this.twox2Power.worldEnds(), 
-     //  new WorldEnd(false, this.twox2Power.finalScene()));
- }
- 
- // Testing the method all Connected()
- void testAllConnected(Tester t) {
-   initData();
-   t.checkExpect(this.fourx4Power.allConnected(), false);
-   t.checkExpect(this.twox2Power.allConnected(), false);
-   this.twox2Power.onKeyEvent("down");
-   t.checkExpect(this.twox2Power.allConnected(), true);
-   
- }
- 
+
+  // Testing worldEnds()
+  void testWorldEnds(Tester t) {
+    initData();
+    t.checkExpect(this.fourx4Power.worldEnds(), new WorldEnd(false, this.fourx4Power.makeScene()));
+    t.checkExpect(this.fivex5Power.worldEnds(), new WorldEnd(false, this.fivex5Power.makeScene()));
+
+    this.twox2Power.onKeyEvent("down");
+    this.twox2Power.getPowered();
+    t.checkExpect(this.twox2Power.worldEnds(), new WorldEnd(true, this.twox2Power.finalScene()));
+  }
+
+  // Testing the method allConnected()
+  void testAllConnected(Tester t) {
+    initData();
+    t.checkExpect(this.fourx4Power.allConnected(), false);
+    t.checkExpect(this.twox2Power.allConnected(), false);
+    this.twox2Power.onKeyEvent("down");
+    this.twox2Power.getPowered();
+
+    t.checkExpect(this.twox2Power.allConnected(), true);
+  }
+
+  // Testing the method finalScene()
+  void testFinalScene(Tester t) {
+    initData();
+
+    WorldScene result = this.twox2Power.makeScene();
+    result.placeImageXY(new TextImage("Winner", 20, Color.MAGENTA), this.twox2Power.width / 2,
+        this.twox2Power.height / 2);
+
+    t.checkExpect(this.twox2Power.finalScene(), result);
+  }
 }
-
-  
-
-/*
- * TESTS REMAINING: 
- * 2. piecesConnected 
- * 11. worldEnds() 
- * 12. allConnected() 
- * 13. finalScene 
- * 
- */
