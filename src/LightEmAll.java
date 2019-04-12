@@ -299,7 +299,6 @@ class LightEmAll extends World {
   // Creates the game board with empty cells
   public ArrayList<ArrayList<GamePiece>> manualBoard() {
     ArrayList<ArrayList<GamePiece>> boardResult = new ArrayList<ArrayList<GamePiece>>();
-
     for (int i = 0; i < this.height / GamePiece.CELL_LENGTH; i++) {
       ArrayList<GamePiece> rowResult = new ArrayList<GamePiece>();
       for (int j = 0; j < this.width / GamePiece.CELL_LENGTH; j++) {
@@ -311,13 +310,18 @@ class LightEmAll extends World {
   }
 
   // Creates the game board using a subdivision algorithim for factal-like wiring
+  // Creates the game board using a subdivision algorithm for fractal-like wiring
   public void fractalBoard(int numRows, int numCols, int currRow, int currCol) {
     int startRow = currRow;
     int startCol = currCol;
 
-    if (numRows == 1 || numCols == 1) {
-    }
-    else { // Makes the U shape for the current portion of the graph
+    // At the base case of one row or one column, irrespective
+    // of the other dimension, the program should stop. No U should be drawn.
+    if (numRows == 1 || numCols == 1) { }
+      
+    // Initially draw a U-shaped wire formation around the outside of the given grid
+    
+    else {
       // Top left of U
       this.board.get(startRow).get(startCol).bottom = true;
       // Bottom left
@@ -342,11 +346,13 @@ class LightEmAll extends World {
       }
     }
 
+    if (numRows == 1 || numCols == 1 || numCols == 2) { }
     // When there is only one row, all pieces should have the top field be true.
-    if (numRows == 1 && numCols > 2) {
+    else if (numRows == 1 && numCols > 2) {
       this.fractalBoard(1, (int) Math.ceil(numCols / 2), currRow, currCol);
       this.fractalBoard(1, numCols / 2, currRow, (int) Math.ceil(currCol / 2));
     }
+
     else if (numRows == 1 && numCols == 2) {
       this.board.get(startRow).get(startCol).right = true;
       this.board.get(startRow).get(startCol + 1).left = true;
@@ -362,14 +368,8 @@ class LightEmAll extends World {
         this.board.get(startRow + 1).get(i).top = true;
       }
     }
-    else if (numRows == 3 && numCols == 3) {
-      this.board.get(startRow + 1).get(startCol).right = true;
-      this.board.get(startRow + 1).get(startCol + 1).left = true;
-      this.board.get(startRow + 1).get(startCol + 1).top = true;
-      this.board.get(startRow).get(startCol + 1).bottom = true;
-
-    }
-    else if (numRows >= 4 || numCols >= 4) {
+    
+    else if (numRows >= 3 || numCols >= 3) {
       // Top left quadrant
       fractalBoard((int) Math.ceil(numRows / 2.0), (int) Math.ceil(numCols / 2.0), currRow,
           currCol);
@@ -453,14 +453,12 @@ class LightEmAll extends World {
    * return new WorldEnd(false, this.makeScene()); } }
    */
 
+  // The end scene that congratulates the user on winning. User can only win or keep playing.
   public WorldScene finalScene() {
     WorldScene ws = this.makeScene();
-
     ws.placeImageXY(new TextImage("You won", 35, Color.MAGENTA), this.width / 2, this.height / 2);
-
     return ws;
   }
-
 }
 
 class GamePiece {
@@ -550,7 +548,7 @@ class ExamplesGame {
 
   void initData() {
     // To use with bigbang
-    test = new LightEmAll(4, 4, 1);
+    test = new LightEmAll(6, 4, 1);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3, 0);
     // To test a 4x4 grid
@@ -562,8 +560,8 @@ class ExamplesGame {
 // Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-    //test.bigBang(test.width, test.height, .003);
-    threex3.bigBang(this.threex3.width, this.threex3.height, .003);
+    test.bigBang(test.width, test.height, .003);
+    // threex3.bigBang(this.threex3.width, this.threex3.height, .003);
   }
 
   // Testing the makeScene() method
