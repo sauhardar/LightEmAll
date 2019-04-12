@@ -47,6 +47,8 @@ class LightEmAll extends World {
     this.getPowered();
   }
 
+  // EFFECT: Changes the appropriate GamePieces' isPowered fields
+  // Determines if each GamePiece should be lit up
   void getPowered() {
     this.setDepths(this.powerRow, this.powerCol);
 
@@ -150,7 +152,9 @@ class LightEmAll extends World {
     }
     return false;
   }
-
+  
+  // EFFECT: Puts every single GamePiece in the board into the 
+  // field this.nodes
   void getNodes() {
     for (ArrayList<GamePiece> row : this.board) {
       for (GamePiece gp : row) {
@@ -159,6 +163,8 @@ class LightEmAll extends World {
     }
   }
 
+  // EFFECT: For every single GamePiece in the game, adds it to the 
+  // HashMap this.graph with the value of -1 (initially)
   void initHash() {
     for (GamePiece gp : this.nodes) {
       this.graph.put(gp, -1);
@@ -479,8 +485,8 @@ class LightEmAll extends World {
   }
 
   boolean allConnected() {
-    for(GamePiece gp: this.nodes) {
-      if(!gp.isPowered) {
+    for (GamePiece gp : this.nodes) {
+      if (!gp.isPowered) {
         return false;
       }
     }
@@ -610,245 +616,422 @@ class Edge {
 //All the examples and tests.
 class ExamplesGame {
   LightEmAll test;
+  LightEmAll twox2Power;
   LightEmAll threex3;
+  LightEmAll threex3Power;
   LightEmAll fourx4;
+  LightEmAll fourx4Power;
   LightEmAll fivex5;
+  LightEmAll fivex5Power;
 
   void initData() {
-    // To use with bigbang
-    test = new LightEmAll(4, 4, 1);
-//    // To test a 3x3 grid
-//    threex3 = new LightEmAll(3, 3, 0);
-//    // To test a 4x4 grid
-//    fourx4 = new LightEmAll(4, 4, 0);
-//    // To test a 5x5 grid
-//    fivex5 = new LightEmAll(5, 5, 0);
+    // To use with big-bang
+    test = new LightEmAll(4,4, 1);
+    twox2Power = new LightEmAll(2,2, 1);
+    // To test a 3x3 grid
+    threex3 = new LightEmAll(3, 3, 0);
+    // To test a 3x3 grid Powered
+    threex3Power = new LightEmAll(3, 3, 1);
+    // To test a 4x4 grid that
+    fourx4Power = new LightEmAll(4, 4, 1);
+    // To test a 4x4 grid
+    fourx4 = new LightEmAll(4, 4, 0);
+    // To test a 5x5 grid
+    fivex5 = new LightEmAll(5, 5, 0);
+    // To test a 4x4 grid that
+    fivex5Power = new LightEmAll(5,5, 1);
+    
   }
 
   // Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-    test.bigBang(test.width, test.height, .003);
-    // threex3.bigBang(this.threex3.width, this.threex3.height, .003);
+    //test.bigBang(test.width, test.height, .003);
   }
-//
-//  // Testing the makeScene() method
-//  void testMakeScene(Tester t) {
-//    initData();
-//    // testing 3x3
-//    WorldScene testImage1 = new WorldScene(this.threex3.width, this.threex3.width);
-//    for (ArrayList<GamePiece> row : this.threex3.board) {
-//      for (GamePiece cell : row) {
-//        testImage1.placeImageXY(cell.drawPiece(),
-//            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
-//            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
-//      }
-//    }
-//    // testing 4x4
-//    WorldScene testImage = new WorldScene(this.fourx4.width, this.fourx4.width);
-//    for (ArrayList<GamePiece> row : this.fourx4.board) {
-//      for (GamePiece cell : row) {
-//        testImage.placeImageXY(cell.drawPiece(),
-//            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
-//            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
-//      }
-//    } // testing 5x5
-//    WorldScene testImage2 = new WorldScene(this.fivex5.width, this.fivex5.width);
-//    for (ArrayList<GamePiece> row : this.fivex5.board) {
-//      for (GamePiece cell : row) {
-//        testImage2.placeImageXY(cell.drawPiece(),
-//            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
-//            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
-//      }
-//    }
-//    t.checkExpect(this.fourx4.makeScene(), testImage);
-//    t.checkExpect(this.threex3.makeScene(), testImage1);
-//    t.checkExpect(this.fivex5.makeScene(), testImage2);
-//  }
-//
-//  // Testing the method makeBoard()
-//  void testMakeBoard(Tester t) {
-//
-//    initData();
-//    // Testing a 3x3 board that is manually created.
-//    ArrayList<ArrayList<GamePiece>> answer = new ArrayList<ArrayList<GamePiece>>();
-//    ArrayList<GamePiece> row1 = new ArrayList<GamePiece>(
-//        Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
-//            new GamePiece(0, 1, true, true, false, false, false),
-//            new GamePiece(0, 2, true, true, false, false, false)));
-//    ArrayList<GamePiece> row2 = new ArrayList<GamePiece>(
-//        Arrays.asList(new GamePiece(1, 0, true, true, true, true, false),
-//            new GamePiece(1, 1, true, true, true, true, true),
-//            new GamePiece(1, 2, true, true, true, true, false)));
-//    ArrayList<GamePiece> row3 = new ArrayList<GamePiece>(
-//        Arrays.asList(new GamePiece(2, 0, true, true, false, false, false),
-//            new GamePiece(2, 1, true, true, false, false, false),
-//            new GamePiece(2, 2, true, true, false, false, false)));
-//
-//    answer.add(row1);
-//    answer.add(row2);
-//    answer.add(row3);
-//
-//    t.checkExpect(this.threex3.makeBoard(), answer);
-//
-//    // Testing a 5x5 board
-//    ArrayList<ArrayList<GamePiece>> answer2 = new ArrayList<ArrayList<GamePiece>>();
-//    ArrayList<GamePiece> row15 = new ArrayList<GamePiece>(
-//        Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
-//            new GamePiece(0, 1, true, true, false, false, false),
-//            new GamePiece(0, 2, true, true, false, false, false),
-//            new GamePiece(0, 3, true, true, false, false, false),
-//            new GamePiece(0, 4, true, true, false, false, false)));
-//    ArrayList<GamePiece> row25 = new ArrayList<GamePiece>(
-//        Arrays.asList(new GamePiece(1, 0, true, true, false, false, false),
-//            new GamePiece(1, 1, true, true, false, false, false),
-//            new GamePiece(1, 2, true, true, false, false, false),
-//            new GamePiece(1, 3, true, true, false, false, false),
-//            new GamePiece(1, 4, true, true, false, false, false)));
-//    ArrayList<GamePiece> row35 = new ArrayList<GamePiece>(
-//        Arrays.asList(new GamePiece(2, 0, true, true, true, true, false),
-//            new GamePiece(2, 1, true, true, true, true, false),
-//            new GamePiece(2, 2, true, true, true, true, true),
-//            new GamePiece(2, 3, true, true, true, true, false),
-//            new GamePiece(2, 4, true, true, true, true, false)));
-//    ArrayList<GamePiece> row45 = new ArrayList<GamePiece>(
-//        Arrays.asList(new GamePiece(3, 0, true, true, false, false, false),
-//            new GamePiece(3, 1, true, true, false, false, false),
-//            new GamePiece(3, 2, true, true, false, false, false),
-//            new GamePiece(3, 3, true, true, false, false, false),
-//            new GamePiece(3, 4, true, true, false, false, false)));
-//    ArrayList<GamePiece> row55 = new ArrayList<GamePiece>(
-//        Arrays.asList(new GamePiece(4, 0, true, true, false, false, false),
-//            new GamePiece(4, 1, true, true, false, false, false),
-//            new GamePiece(4, 2, true, true, false, false, false),
-//            new GamePiece(4, 3, true, true, false, false, false),
-//            new GamePiece(4, 4, true, true, false, false, false)));
-//
-//    answer2.add(row15);
-//    answer2.add(row25);
-//    answer2.add(row35);
-//    answer2.add(row45);
-//    answer2.add(row55);
-//
-//    t.checkExpect(this.fivex5.makeBoard(), answer2);
-//    // More testing 5x5 creation:
-//    t.checkExpect(this.fivex5.board.get(0).get(0).bottom, false);
-//    t.checkExpect(this.fivex5.board.get(0).get(0).right && this.fivex5.board.get(0).get(0).left,
-//        true);
-//    t.checkExpect(this.fivex5.board.get(0).get(0).powerStation, false);
-//    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
-//    t.checkExpect(this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left
-//        && this.fivex5.board.get(2).get(2).top && this.fivex5.board.get(2).get(2).bottom, true);
-//  }
-//
-//  // Testing the whether clicking rotates the game pieces correctly.
-//  void testOnMouseClicked(Tester t) {
-//    initData();
-//    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
-//    this.threex3.onMouseClicked(new Posn(10, 10), "RightButton");
-//    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
-//    this.threex3.onMouseClicked(new Posn(10, 10), "LeftButton");
-//    t.checkExpect(this.threex3.board.get(0).get(0).bottom, true);
-//    this.threex3.onMouseClicked(new Posn(10, 10), "LeftButton");
-//    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
-//    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
-//    t.checkExpect(this.fivex5.board.get(2).get(2).right, true);
-//    this.fivex5.onMouseClicked(new Posn(2 * GamePiece.CELL_LENGTH, 2 * GamePiece.CELL_LENGTH),
-//        "LeftButton");
-//    t.checkExpect(this.fivex5.board.get(2).get(2).right, true);
-//    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
-//  }
-//
-//  // Testing whether the pieces are connected
-//  void testTwoPiecesConnected(Tester t) {
-//    initData();
-//    t.checkExpect(this.threex3.twoPiecesConnected(this.threex3.board.get(0).get(0),
-//        this.threex3.board.get(1).get(0)), false);
-//    this.threex3.onMouseClicked(new Posn(10, 60), "LeftButton");
-//    t.checkExpect(this.threex3.twoPiecesConnected(this.threex3.board.get(0).get(0),
-//        this.threex3.board.get(0).get(1)), true);
-//    t.checkExpect(this.fourx4.twoPiecesConnected(this.fourx4.board.get(2).get(2),
-//        this.fourx4.board.get(2).get(3)), true);
-//    this.fourx4.onMouseClicked(
-//        new Posn(2 * GamePiece.CELL_LENGTH + 5, 3 * GamePiece.CELL_LENGTH + 5), "LeftButton");
-//    t.checkExpect(this.fourx4.twoPiecesConnected(this.fourx4.board.get(2).get(2),
-//        this.fourx4.board.get(2).get(3)), true);
-//  }
 
-  // Testing drwaing individual game pieces
-//  void testDrawPiece(Tester t) {
-//    initData();
-//    LineImage vertLine = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2), Color.GRAY);
-//    LineImage horLine = new LineImage(new Posn(GamePiece.CELL_LENGTH / 2, 0), Color.GRAY);
-//    // Testing top right piece
-//    WorldImage outlineTopRight = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
-//        OutlineMode.OUTLINE, Color.BLACK);
-//    WorldImage resultTopRight = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
-//        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
-//    resultTopRight = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        resultTopRight);
-//    resultTopRight = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        resultTopRight);
-//    // Testing 4-way connection:
-//    WorldImage outline4way = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
-//        OutlineMode.OUTLINE, Color.BLACK);
-//    WorldImage result4way = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
-//        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
-//    result4way = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        result4way);
-//    result4way = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        result4way);
-//    result4way = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.TOP, vertLine, 0, 0,
-//        result4way);
-//    result4way = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLine, 0, 0,
-//        result4way);
-//
-//    WorldImage outlinestar = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH,
-//        OutlineMode.OUTLINE, Color.BLACK);
-//    WorldImage resultstar = new OverlayImage(new RectangleImage(GamePiece.CELL_LENGTH,
-//        GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY), new EmptyImage());
-//    resultstar = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        resultstar);
-//    resultstar = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, horLine, 0, 0,
-//        resultstar);
-//    resultstar = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.TOP, vertLine, 0, 0,
-//        resultstar);
-//    resultstar = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLine, 0, 0,
-//        resultstar);
-//    WorldImage star = new StarImage(15, OutlineMode.SOLID, Color.CYAN);
-//    resultstar = new OverlayImage(star, resultstar);
-//
-//    // Top right game piece
-//    t.checkExpect(this.fivex5.board.get(0).get(0).drawPiece(),
-//        new OverlayImage(outlineTopRight, resultTopRight));
-//    // Two down (4-way connection)
-//    t.checkExpect(this.fivex5.board.get(0).get(2).drawPiece(),
-//        new OverlayImage(outline4way, resultTopRight));
-//    // Testing the star (middle) piece
-//    t.checkExpect(this.fivex5.board.get(2).get(2).drawPiece(),
-//        new OverlayImage(outlinestar, resultstar));
-//  }
-//
-//  // Testing rotation for various game pieces.
-//  void testRotate(Tester t) {
-//    initData();
-//    // top right piece
-//    t.checkExpect(this.fivex5.board.get(0).get(0).left && this.fivex5.board.get(0).get(0).right,
-//        true);
-//    this.fivex5.board.get(0).get(0).rotate();
-//    t.checkExpect(this.fivex5.board.get(0).get(0).left || this.fivex5.board.get(0).get(0).right,
-//        false);
-//    // piece with coord (2,0)
-//    t.checkExpect(this.fivex5.board.get(3).get(0).top || this.fivex5.board.get(3).get(0).bottom,
-//        false);
-//    this.fivex5.board.get(3).get(0).rotate();
-//    t.checkExpect(this.fivex5.board.get(3).get(0).top && this.fivex5.board.get(3).get(0).bottom,
-//        true);
-//    // star/4-way piece.
-//    t.checkExpect(this.fivex5.board.get(2).get(2).bottom && this.fivex5.board.get(2).get(2).top
-//        && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
-//    this.fivex5.board.get(0).get(0).rotate();
-//    t.checkExpect(this.fivex5.board.get(2).get(2).bottom && this.fivex5.board.get(2).get(2).top
-//        && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
-//  }
+  // Testing the makeScene() method
+  void testMakeScene(Tester t) {
+    initData();
+    // testing 3x3 powered
+    WorldScene testImage3x3 = new WorldScene(this.threex3Power.width, this.threex3Power.height);
+    
+    for (ArrayList<GamePiece> row: this.threex3Power.board) {
+      for (GamePiece cell : row) {
+        testImage3x3.placeImageXY(cell.drawPiece(4),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    }
+    
+    // testing 4x4 powered
+    WorldScene testImage4x4 = new WorldScene(this.fourx4Power.width, this.fourx4Power.height);
+    for (ArrayList<GamePiece> row: this.fourx4Power.board) {
+      for (GamePiece cell : row) {
+        testImage4x4.placeImageXY(cell.drawPiece(6),
+            cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
+            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+      }
+    }
+    
+    t.checkExpect(this.threex3Power.makeScene(), testImage3x3);
+    t.checkExpect(this.fourx4Power.makeScene(), testImage4x4);
+  }
+
+  // Testing the method makeBoard()
+  void testMakeBoard(Tester t) {
+
+    initData();
+    // Testing a 3x3 board that is manually created.
+    ArrayList<ArrayList<GamePiece>> answer = new ArrayList<ArrayList<GamePiece>>();
+    ArrayList<GamePiece> row1 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
+            new GamePiece(0, 1, true, true, false, false, false),
+            new GamePiece(0, 2, true, true, false, false, false)));
+    ArrayList<GamePiece> row2 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(1, 0, true, true, true, true, false),
+            new GamePiece(1, 1, true, true, true, true, true),
+            new GamePiece(1, 2, true, true, true, true, false)));
+    ArrayList<GamePiece> row3 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(2, 0, true, true, false, false, false),
+            new GamePiece(2, 1, true, true, false, false, false),
+            new GamePiece(2, 2, true, true, false, false, false)));
+
+    answer.add(row1);
+    answer.add(row2);
+    answer.add(row3);
+
+    t.checkExpect(this.threex3.makeBoard(), answer);
+
+    // Testing a 5x5 board
+    ArrayList<ArrayList<GamePiece>> answer2 = new ArrayList<ArrayList<GamePiece>>();
+    ArrayList<GamePiece> row15 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(0, 0, true, true, false, false, false),
+            new GamePiece(0, 1, true, true, false, false, false),
+            new GamePiece(0, 2, true, true, false, false, false),
+            new GamePiece(0, 3, true, true, false, false, false),
+            new GamePiece(0, 4, true, true, false, false, false)));
+    ArrayList<GamePiece> row25 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(1, 0, true, true, false, false, false),
+            new GamePiece(1, 1, true, true, false, false, false),
+            new GamePiece(1, 2, true, true, false, false, false),
+            new GamePiece(1, 3, true, true, false, false, false),
+            new GamePiece(1, 4, true, true, false, false, false)));
+    ArrayList<GamePiece> row35 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(2, 0, true, true, true, true, false),
+            new GamePiece(2, 1, true, true, true, true, false),
+            new GamePiece(2, 2, true, true, true, true, true),
+            new GamePiece(2, 3, true, true, true, true, false),
+            new GamePiece(2, 4, true, true, true, true, false)));
+    ArrayList<GamePiece> row45 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(3, 0, true, true, false, false, false),
+            new GamePiece(3, 1, true, true, false, false, false),
+            new GamePiece(3, 2, true, true, false, false, false),
+            new GamePiece(3, 3, true, true, false, false, false),
+            new GamePiece(3, 4, true, true, false, false, false)));
+    ArrayList<GamePiece> row55 = new ArrayList<GamePiece>(
+        Arrays.asList(new GamePiece(4, 0, true, true, false, false, false),
+            new GamePiece(4, 1, true, true, false, false, false),
+            new GamePiece(4, 2, true, true, false, false, false),
+            new GamePiece(4, 3, true, true, false, false, false),
+            new GamePiece(4, 4, true, true, false, false, false)));
+
+    answer2.add(row15);
+    answer2.add(row25);
+    answer2.add(row35);
+    answer2.add(row45);
+    answer2.add(row55);
+
+    t.checkExpect(this.fivex5.makeBoard(), answer2);
+    // More testing 5x5 creation:
+    t.checkExpect(this.fivex5.board.get(0).get(0).bottom, false);
+    t.checkExpect(this.fivex5.board.get(0).get(0).right && this.fivex5.board.get(0).get(0).left,
+        true);
+    t.checkExpect(this.fivex5.board.get(0).get(0).powerStation, false);
+    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
+    t.checkExpect(this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left
+        && this.fivex5.board.get(2).get(2).top && this.fivex5.board.get(2).get(2).bottom, true);
+  }
+
+  // Testing the method manualBoad()
+  void testManualBoard(Tester t) {
+    initData();
+    
+    ArrayList<ArrayList<GamePiece>> answer = new ArrayList<ArrayList<GamePiece>>();
+    ArrayList<GamePiece> firstRow = new ArrayList<GamePiece>();
+    ArrayList<GamePiece> secRow = new ArrayList<GamePiece>();
+    ArrayList<GamePiece> thirdRow = new ArrayList<GamePiece>();
+    GamePiece one = new GamePiece(0, 0, false, false, false, false, false);
+    GamePiece two = new GamePiece(0, 1, false, false, false, false, false);
+    GamePiece three = new GamePiece(0,2, false, false, false, false, false);
+    GamePiece four = new GamePiece(1, 0, false, false, false, false, false);
+    GamePiece five = new GamePiece(1, 1, false, false, false, false, false);
+    GamePiece six = new GamePiece(1, 2, false, false, false, false, false);
+    GamePiece seven = new GamePiece(2, 0, false, false, false, false, false);
+    GamePiece eight = new GamePiece(2, 1, false, false, false, false, false);
+    GamePiece nine = new GamePiece(2,2, false, false, false, false, false);
+    
+    firstRow.add(one);
+    firstRow.add(two);
+    firstRow.add(three);
+    secRow.add(four);
+    secRow.add(five);
+    secRow.add(six);
+    thirdRow.add(seven);
+    thirdRow.add(eight);
+    thirdRow.add(nine);
+    
+    answer.addAll(Arrays.asList(firstRow, secRow, thirdRow));
+    
+    t.checkExpect(this.threex3.manualBoard(), answer);
+    
+  }
+  
+  // Testing the whether clicking rotates the game pieces correctly.
+  void testOnMouseClicked(Tester t) {
+    initData();
+    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
+    this.threex3.onMouseClicked(new Posn(10, 10), "RightButton");
+    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
+    this.threex3.onMouseClicked(new Posn(10, 10), "LeftButton");
+    t.checkExpect(this.threex3.board.get(0).get(0).bottom, true);
+    this.threex3.onMouseClicked(new Posn(10, 10), "LeftButton");
+    t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
+    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
+    t.checkExpect(this.fivex5.board.get(2).get(2).right, true);
+    this.fivex5.onMouseClicked(new Posn(2 * GamePiece.CELL_LENGTH, 2 * GamePiece.CELL_LENGTH),
+        "LeftButton");
+    t.checkExpect(this.fivex5.board.get(2).get(2).right, true);
+    t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
+  }
+
+  // Testing whether the pieces are connected
+  void testTwoPiecesConnected(Tester t) {
+    initData();
+    t.checkExpect(this.threex3.twoPiecesConnected(this.threex3.board.get(0).get(0),
+        this.threex3.board.get(1).get(0)), false);
+    this.threex3.onMouseClicked(new Posn(10, 60), "LeftButton");
+    t.checkExpect(this.threex3.twoPiecesConnected(this.threex3.board.get(0).get(0),
+        this.threex3.board.get(0).get(1)), true);
+    t.checkExpect(this.fourx4.twoPiecesConnected(this.fourx4.board.get(2).get(2),
+        this.fourx4.board.get(2).get(3)), true);
+    this.fourx4.onMouseClicked(
+        new Posn(2 * GamePiece.CELL_LENGTH + 5, 3 * GamePiece.CELL_LENGTH + 5), "LeftButton");
+    t.checkExpect(this.fourx4.twoPiecesConnected(this.fourx4.board.get(2).get(2),
+        this.fourx4.board.get(2).get(3)), true);
+    
+    t.checkExpect(this.fivex5Power.twoPiecesConnected(this.fivex5Power.board.get(0).get(2),
+        this.fivex5Power.board.get(0).get(1)), false);
+    t.checkExpect(this.fivex5Power.twoPiecesConnected(this.fivex5Power.board.get(0).get(2),
+        this.fivex5Power.board.get(1).get(2)), true);
+    t.checkExpect(this.fivex5Power.twoPiecesConnected(this.fivex5Power.board.get(0).get(2),
+        this.fivex5Power.board.get(2).get(1)), false);
+    
+    t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(0).get(0), 
+        this.fourx4Power.board.get(1).get(0)), true);
+    this.fourx4Power.board.get(1).get(0).rotate();
+    t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(0).get(0), 
+        this.fourx4Power.board.get(1).get(0)), false);
+  }
+
+  // Testing rotation for various game pieces.
+  void testRotate(Tester t) {
+    initData();
+    // top right piece
+    t.checkExpect(this.fivex5.board.get(0).get(0).left && this.fivex5.board.get(0).get(0).right,
+        true);
+    this.fivex5.board.get(0).get(0).rotate();
+    t.checkExpect(this.fivex5.board.get(0).get(0).left || this.fivex5.board.get(0).get(0).right,
+        false);
+    // piece with coordinates (2,0)
+    t.checkExpect(this.fivex5.board.get(3).get(0).top || this.fivex5.board.get(3).get(0).bottom,
+        false);
+    this.fivex5.board.get(3).get(0).rotate();
+    t.checkExpect(this.fivex5.board.get(3).get(0).top && this.fivex5.board.get(3).get(0).bottom,
+        true);
+    // star/4-way piece.
+    t.checkExpect(this.fivex5.board.get(2).get(2).bottom && this.fivex5.board.get(2).get(2).top
+        && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
+    this.fivex5.board.get(0).get(0).rotate();
+    t.checkExpect(this.fivex5.board.get(2).get(2).bottom && this.fivex5.board.get(2).get(2).top
+        && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
+  }
+
+  // testing getPowered()
+  void testGetPowered(Tester t) {
+    initData();
+    t.checkExpect(this.fourx4Power.board.get(0).get(0).isPowered, false);
+    t.checkExpect(this.fourx4Power.board.get(1).get(0).isPowered, false);
+    t.checkExpect(this.fourx4Power.board.get(1).get(0).isPowered, false);
+    t.checkExpect(this.fourx4Power.board.get(3).get(1).isPowered, true);
+    t.checkExpect(this.fourx4Power.board.get(3).get(2).isPowered, true);
+  }
+
+  // testing piecesConnected()
+  void testPiecesConnected(Tester t) {
+    initData();
+    t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(0).get(0),
+        this.fourx4Power.board.get(3).get(0)), true);
+    this.fourx4Power.board.get(1).get(0).rotate();
+    this.fourx4Power.board.get(1).get(0).rotate();
+    this.fourx4Power.board.get(1).get(0).rotate();
+    // t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(0).get(0),
+    //    this.fourx4Power.board.get(3).get(0)), false);
+  }
+  
+  // Testing method getNodes()
+  void testGetNodes(Tester t) {
+    initData();
+    this.fourx4Power.nodes.clear();
+    t.checkExpect(this.fourx4Power.nodes.size(), 0);
+    this.fourx4Power.getNodes();
+    // There are and should be 16 because this is a 4x4
+    t.checkExpect(this.fourx4Power.nodes.size(), 16);
+  }
+  
+  // Testing initHas()
+  void testInitHas(Tester t) {
+    initData();
+    this.fourx4Power.graph.clear();
+    t.checkExpect(this.fourx4Power.graph.size(), 0);
+    this.fourx4Power.initHash();
+    t.checkExpect(this.fourx4Power.graph.size(), 16);
+    // Checks if any GamePiece's value in the HashMap is -1 (initially)
+    t.checkExpect(this.fourx4Power.graph.get(this.fourx4Power.board.get(0).get(0)), -1);
+    t.checkExpect(this.fourx4Power.graph.get(this.fourx4Power.board.get(0).get(3)), -1);
+  }
+  
+  // Testing setDepths((
+  void testSetDepths(Tester t) {
+    initData();
+    // Finds the farthest GamePiece from the given GamePiece
+    t.checkExpect(this.fourx4Power.setDepths(0, 2), 
+        this.fourx4Power.board.get(0).get(1));
+    t.checkExpect(this.fourx4Power.setDepths(0, 0), 
+        this.fourx4Power.board.get(0).get(2));
+    t.checkExpect(this.fourx4Power.setDepths(0, 1), 
+        this.fourx4Power.board.get(0).get(2));
+    t.checkExpect(this.fourx4Power.setDepths(2, 0), 
+        this.fourx4Power.board.get(0).get(2));
+    t.checkExpect(this.fivex5Power.setDepths(0, 3), 
+        this.fivex5Power.board.get(0).get(2));
+    
+  }
+  
+  // Testing calcRadius 
+  void testCalcRadius(Tester t) {
+    initData();
+    t.checkExpect(this.fourx4Power.calcRadius(), 6);
+    // The answer to 5x5 should be 8, returning 10.
+    //t.checkExpect(this.fivex5Power.calcRadius(), 8);
+  }
+  
+  // testing fractalBoard() 
+  void testFractalBoard(Tester t) {
+    initData();
+    
+    t.checkExpect(this.fourx4Power.board.get(0).get(2).powerStation, true);
+    t.checkExpect(this.fourx4Power.board.get(0).get(2).bottom, true);
+    t.checkExpect(this.fourx4Power.board.get(1).get(2).bottom, false);
+    t.checkExpect(this.fourx4Power.board.get(1).get(2).top, true);
+    t.checkExpect(this.fourx4Power.board.get(1).get(2).right, true);
+    t.checkExpect(this.fourx4Power.board.get(3).get(2).top, true);
+    t.checkExpect(this.fourx4Power.board.get(3).get(2).left, true);
+    t.checkExpect(this.fourx4Power.board.get(3).get(2).right, true);
+    t.checkExpect(this.fourx4Power.board.get(3).get(2).bottom, false);
+  }
+
+  // testing drawPiece()
+  void testDrawPiece(Tester t) {
+    initData();
+    // Top left peice that is not powered
+    LineImage vertLineNP1 = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2), Color.GRAY);
+    WorldImage outline1 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.OUTLINE,
+        Color.BLACK);
+    WorldImage result1 = new OverlayImage(
+        new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY),
+        new EmptyImage());
+    
+    result1 = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, vertLineNP1, 0, 0,
+        result1);
+    
+    result1 = new OverlayImage(outline1, result1);
+    
+    // drawing a star
+    LineImage poweredVert = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2), new Color(255, 255, 0));
+    WorldImage outline2 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.OUTLINE,
+        Color.BLACK);
+    WorldImage result2 = new OverlayImage(
+        new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY),
+        new EmptyImage());
+    
+    result2 = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.BOTTOM, poweredVert, 0, 0,
+        result2);
+    
+    WorldImage star = new StarImage(15, OutlineMode.SOLID, Color.CYAN);
+    result2 = new OverlayImage(star, result2);
+    
+    result2 = new OverlayImage(outline2, result2);
+    
+    
+    // drawing cell with top and right true with g value of 213
+    
+    LineImage poweredvert2 = new LineImage(new Posn(0, GamePiece.CELL_LENGTH / 2),
+        new Color(255, 213, 0));
+    LineImage poweredhor2 = new LineImage(new Posn(GamePiece.CELL_LENGTH / 2, 0),
+        new Color(255, 213, 0));
+    
+
+    WorldImage outline3 = new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.OUTLINE,
+        Color.BLACK);
+    WorldImage result3 = new OverlayImage(
+        new RectangleImage(GamePiece.CELL_LENGTH, GamePiece.CELL_LENGTH, OutlineMode.SOLID, Color.DARK_GRAY),
+        new EmptyImage());
+    
+    result3 = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.PINHOLE, poweredhor2, 0, 0,
+        result3);
+    result3 = new OverlayOffsetAlign(AlignModeX.PINHOLE, AlignModeY.TOP, poweredvert2, 0, 0,
+        result3);
+    
+    
+    result3 = new OverlayImage(outline3, result3);
+    
+    t.checkExpect(this.fourx4Power.board.get(0).get(0).drawPiece(6), result1);
+    t.checkExpect(this.fourx4Power.board.get(0).get(2).drawPiece(6), result2);
+    t.checkExpect(this.fourx4Power.board.get(1).get(2).drawPiece(6), result3);
+  }
+  
+  // testing worldEnds() 
+ void testWorldEnds(Tester t) {
+   initData();
+   t.checkExpect(this.fourx4Power.worldEnds(), 
+       new WorldEnd(false, this.fourx4Power.makeScene()));
+   t.checkExpect(this.fivex5Power.worldEnds(), 
+       new WorldEnd(false, this.fivex5Power.makeScene()));
+   
+   this.twox2Power.onKeyEvent("down");
+   //t.checkExpect(this.twox2Power.worldEnds(), 
+     //  new WorldEnd(false, this.twox2Power.finalScene()));
+ }
+ 
+ // Testing the method all Connected()
+ void testAllConnected(Tester t) {
+   initData();
+   t.checkExpect(this.fourx4Power.allConnected(), false);
+   t.checkExpect(this.twox2Power.allConnected(), false);
+   this.twox2Power.onKeyEvent("down");
+   t.checkExpect(this.twox2Power.allConnected(), true);
+   
+ }
+ 
 }
+
+  
+
+/*
+ * TESTS REMAINING: 
+ * 2. piecesConnected 
+ * 11. worldEnds() 
+ * 12. allConnected() 
+ * 13. finalScene 
+ * 
+ */
