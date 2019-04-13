@@ -61,87 +61,114 @@ class LightEmAll extends World {
         gp.isPowered = false;
       }
       gp.distToPS = this.graph.get(gp);
-      // System.out.println("(" + gp.col + ", " + gp.row + ") " + gp.distToPS);
     }
   }
 
   // Determines if two GamePieces are equal (the same)
   boolean samePiece(GamePiece gp1, GamePiece gp2) {
-    return (gp1.row == gp2.row) && (gp1.col == gp2.col);
+    return (gp1.row == gp2.row) && (gp1.col == gp2.col) && (gp1.top == gp2.top);
   }
 
   // Determines if two GamePieces are connected
   boolean piecesConnected(GamePiece target, GamePiece other) {
-    if (samePiece(target, other)) {
-      return true;
-    }
+    return piecesConnectedAccumulator(target, other, new ArrayList<GamePiece>());
+  }
 
-    ArrayList<GamePiece> worklist = new ArrayList<GamePiece>();
-    worklist.add(this.board.get(target.row).get(target.col));
+  // Determines if two GamePieces are connected using accumulator
+  boolean piecesConnectedAccumulator(GamePiece target, GamePiece other,
+      ArrayList<GamePiece> soFar) {
+    return leftConnected(target, other, soFar) || rightConnected(target, other, soFar)
+        || topConnected(target, other, soFar) || bottomConnected(target, other, soFar);
+  }
 
-    ArrayList<GamePiece> soFar = new ArrayList<GamePiece>();
-    soFar.add(this.board.get(target.row).get(target.col));
+  // Determines if GamePiece on left is connected
+  boolean leftConnected(GamePiece target, GamePiece other, ArrayList<GamePiece> soFar) {
+    int rowVal = target.row;
+    int colVal = target.col;
 
-    while (!worklist.isEmpty()) {
-      GamePiece listFirst = worklist.get(0);
-      int rowVal = listFirst.row;
-      int colVal = listFirst.col;
-
-      // Check ABOVE target
-      if (rowVal - 1 > -1 && !(soFar.contains(this.board.get(rowVal - 1).get(colVal))
-          && this.twoPiecesConnected(listFirst, this.board.get(rowVal - 1).get(colVal)))) {
-
-        if (samePiece(this.board.get(rowVal - 1).get(colVal), other)) {
-          return true;
-        }
-        worklist.add(this.board.get(rowVal - 1).get(colVal));
-        soFar.add(this.board.get(rowVal - 1).get(colVal));
+    if (colVal > 0 && target.left && this.board.get(rowVal).get(colVal - 1).right) {
+      if (soFar.contains(this.board.get(rowVal).get(colVal - 1))) {
+        // Do Nothing
       }
-
-      // Check BELOW target
-      if (rowVal + 1 < this.height / GamePiece.CELL_LENGTH
-          && !(soFar.contains(this.board.get(rowVal + 1).get(colVal))
-              && this.twoPiecesConnected(listFirst, this.board.get(rowVal + 1).get(colVal)))) {
-        if (samePiece(this.board.get(rowVal + 1).get(colVal), other)) {
-          return true;
-        }
-        worklist.add(this.board.get(rowVal + 1).get(colVal));
-        soFar.add(this.board.get(rowVal + 1).get(colVal));
+      else if (samePiece(this.board.get(rowVal).get(colVal - 1), other)) {
+        return true;
       }
-
-      // Check LEFT OF target
-      if (colVal - 1 > -1 && !(soFar.contains(this.board.get(rowVal).get(colVal - 1))
-          && this.twoPiecesConnected(listFirst, this.board.get(rowVal).get(colVal - 1)))) {
-
-        if (samePiece(this.board.get(rowVal).get(colVal - 1), other)) {
-          return true;
-        }
-
-        worklist.add(this.board.get(rowVal).get(colVal - 1));
+      else {
         soFar.add(this.board.get(rowVal).get(colVal - 1));
+        return piecesConnectedAccumulator(this.board.get(rowVal).get(colVal - 1), other, soFar);
       }
-
-      // Check RIGHT OF target
-      if (colVal + 1 < this.width / GamePiece.CELL_LENGTH
-          && !(soFar.contains(this.board.get(rowVal).get(colVal + 1))
-              && this.twoPiecesConnected(listFirst, this.board.get(rowVal).get(colVal + 1)))) {
-
-        if (samePiece(this.board.get(rowVal).get(colVal + 1), other)) {
-          return true;
-        }
-
-        worklist.add(this.board.get(rowVal).get(colVal + 1));
-        soFar.add(this.board.get(rowVal).get(colVal + 1));
-      }
-
-      worklist.remove(0);
     }
+    return false;
+  }
 
+  // Determines if GamePiece on right is connected
+  boolean rightConnected(GamePiece target, GamePiece other, ArrayList<GamePiece> soFar) {
+    int rowVal = target.row;
+    int colVal = target.col;
+
+    if (colVal < this.width / GamePiece.CELL_LENGTH - 1 && target.right
+        && this.board.get(rowVal).get(colVal + 1).left) {
+      if (soFar.contains(this.board.get(rowVal).get(colVal + 1))) {
+        // Do Nothing
+      }
+      else if (samePiece(this.board.get(rowVal).get(colVal + 1), other)) {
+        return true;
+      }
+      else {
+        soFar.add(this.board.get(rowVal).get(colVal + 1));
+        return piecesConnectedAccumulator(this.board.get(rowVal).get(colVal + 1), other, soFar);
+      }
+    }
+    return false;
+  }
+
+  // Determines if GamePiece above is connected
+  boolean topConnected(GamePiece target, GamePiece other, ArrayList<GamePiece> soFar) {
+    int rowVal = target.row;
+    int colVal = target.col;
+
+    if (rowVal > 0 && target.top && this.board.get(rowVal - 1).get(colVal).bottom) {
+      if (soFar.contains(this.board.get(rowVal - 1).get(colVal))) {
+        // Do Nothing
+      }
+      else if (samePiece(this.board.get(rowVal - 1).get(colVal), other)) {
+        return true;
+      }
+      else {
+        soFar.add(this.board.get(rowVal - 1).get(colVal));
+        return piecesConnectedAccumulator(this.board.get(rowVal - 1).get(colVal), other, soFar);
+      }
+    }
+    return false;
+  }
+
+  // Determines if GamePiece below is connected
+  boolean bottomConnected(GamePiece target, GamePiece other, ArrayList<GamePiece> soFar) {
+    int rowVal = target.row;
+    int colVal = target.col;
+
+    if (rowVal < this.height / GamePiece.CELL_LENGTH - 1 && target.bottom
+        && this.board.get(rowVal + 1).get(colVal).top) {
+      if (soFar.contains(this.board.get(rowVal + 1).get(colVal))) {
+        // Do Nothing
+      }
+      else if (samePiece(this.board.get(rowVal + 1).get(colVal), other)) {
+        return true;
+      }
+      else {
+        soFar.add(this.board.get(rowVal + 1).get(colVal));
+        return piecesConnectedAccumulator(this.board.get(rowVal + 1).get(colVal), other, soFar);
+      }
+    }
     return false;
   }
 
   // Determines if two neighbors are connected
   boolean twoPiecesConnected(GamePiece target, GamePiece other) {
+    if (samePiece(target, other)) {
+      return true;
+    }
+
     // target is ABOVE other
     if (target.row + 1 == other.row && target.col == other.col) {
       return target.bottom && other.top;
@@ -461,7 +488,6 @@ class LightEmAll extends World {
         this.powerRow++;
       }
     }
-    System.out.println("Post-key star posn: (" + this.powerCol + ", " + this.powerRow + ")");
   }
 
   // Determines if the game is won, else keep going
@@ -821,6 +847,15 @@ class ExamplesGame {
     this.fourx4Power.board.get(1).get(0).rotate();
     t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(0).get(0),
         this.fourx4Power.board.get(1).get(0)), false);
+
+    initData();
+    t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(1).get(0),
+        this.fourx4Power.board.get(2).get(0)), true);
+    this.fourx4Power.board.get(1).get(0).rotate();
+    this.fourx4Power.board.get(1).get(0).rotate();
+    this.fourx4Power.board.get(1).get(0).rotate();
+    t.checkExpect(this.fourx4Power.twoPiecesConnected(this.fourx4Power.board.get(1).get(0),
+        this.fourx4Power.board.get(2).get(0)), false);
   }
 
   // Testing rotation for various game pieces.
@@ -857,21 +892,51 @@ class ExamplesGame {
   }
 
   // testing piecesConnected()
-  /* THIS IS NOT DONE */
   void testPiecesConnected(Tester t) {
     initData();
+    // piecesConnected()
     t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(0).get(0),
         this.fourx4Power.board.get(3).get(0)), true);
     this.fourx4Power.board.get(1).get(0).rotate();
     this.fourx4Power.board.get(1).get(0).rotate();
     this.fourx4Power.board.get(1).get(0).rotate();
-    System.out.println(this.fourx4Power.board.get(1).get(0).left);
-    System.out.println(this.fourx4Power.board.get(1).get(0).right);
-    System.out.println(this.fourx4Power.board.get(1).get(0).top);
-    System.out.println(this.fourx4Power.board.get(1).get(0).bottom);
-
-    t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(0).get(0),
+    t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(1).get(0),
         this.fourx4Power.board.get(3).get(0)), false);
+
+    initData();
+    // piecesConnectedAccumulator()
+    t.checkExpect(this.fourx4Power.piecesConnectedAccumulator(this.fourx4Power.board.get(0).get(0),
+        this.fourx4Power.board.get(3).get(0), new ArrayList<GamePiece>()), true);
+    this.fourx4Power.board.get(1).get(0).rotate();
+    this.fourx4Power.board.get(1).get(0).rotate();
+    this.fourx4Power.board.get(1).get(0).rotate();
+    t.checkExpect(this.fourx4Power.piecesConnectedAccumulator(this.fourx4Power.board.get(0).get(0),
+        this.fourx4Power.board.get(3).get(0), new ArrayList<GamePiece>()), false);
+
+    initData();
+    // leftConnected()
+    t.checkExpect(this.fourx4Power.leftConnected(this.fourx4Power.board.get(1).get(2),
+        this.fourx4Power.board.get(3).get(0), new ArrayList<GamePiece>()), false);
+    t.checkExpect(this.fourx4Power.leftConnected(this.fourx4Power.board.get(1).get(3),
+        this.fourx4Power.board.get(1).get(2), new ArrayList<GamePiece>()), true);
+
+    // rightConnected()
+    t.checkExpect(this.fourx4Power.rightConnected(this.fourx4Power.board.get(1).get(2),
+        this.fourx4Power.board.get(3).get(0), new ArrayList<GamePiece>()), true);
+    t.checkExpect(this.fourx4Power.leftConnected(this.fourx4Power.board.get(1).get(2),
+        this.fourx4Power.board.get(1).get(1), new ArrayList<GamePiece>()), false);
+
+    // topConnected()
+    t.checkExpect(this.fourx4Power.topConnected(this.fourx4Power.board.get(1).get(2),
+        this.fourx4Power.board.get(0).get(1), new ArrayList<GamePiece>()), true);
+    t.checkExpect(this.fourx4Power.leftConnected(this.fourx4Power.board.get(3).get(0),
+        this.fourx4Power.board.get(3).get(3), new ArrayList<GamePiece>()), false);
+
+    // bottomConnected()
+    t.checkExpect(this.fourx4Power.bottomConnected(this.fourx4Power.board.get(2).get(2),
+        this.fourx4Power.board.get(2).get(0), new ArrayList<GamePiece>()), true);
+    t.checkExpect(this.fourx4Power.bottomConnected(this.fourx4Power.board.get(3).get(2),
+        this.fourx4Power.board.get(3).get(0), new ArrayList<GamePiece>()), false);
   }
 
   // Testing method getNodes()
