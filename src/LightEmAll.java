@@ -72,7 +72,7 @@ class LightEmAll extends World {
 
   // Determines if two GamePieces are connected
   boolean piecesConnected(GamePiece target, GamePiece other) {
-    if (target.equals(other)) {
+    if (samePiece(target, other)) {
       return true;
     }
 
@@ -195,20 +195,17 @@ class LightEmAll extends World {
       GamePiece listFirst = worklist.get(0);
       int rowVal = listFirst.row;
       int colVal = listFirst.col;
-      boolean depthIncreased = false;
 
       // Check ABOVE target
       if (rowVal > 0 && this.twoPiecesConnected(listFirst, this.board.get(rowVal - 1).get(colVal))
           && !(soFar.contains(this.board.get(rowVal - 1).get(colVal)))) {
 
         worklist.add(this.board.get(rowVal - 1).get(colVal));
-        this.graph.put(this.board.get(rowVal - 1).get(colVal), depth + 1);
-
-        this.board.get(rowVal - 1).get(colVal).distToPS = depth + 1;
+        this.graph.put(this.board.get(rowVal - 1).get(colVal),
+            this.graph.get(this.board.get(rowVal).get(colVal)) + 1);
 
         if (graph.get(this.board.get(rowVal - 1).get(colVal)) > graph.get(lastFound)) {
           lastFound = this.board.get(rowVal - 1).get(colVal);
-          depthIncreased = true;
         }
         soFar.add(this.board.get(rowVal - 1).get(colVal));
       }
@@ -219,13 +216,11 @@ class LightEmAll extends World {
           && !(soFar.contains(this.board.get(rowVal + 1).get(colVal)))) {
 
         worklist.add(this.board.get(rowVal + 1).get(colVal));
-        this.graph.put(this.board.get(rowVal + 1).get(colVal), depth + 1);
-
-        this.board.get(rowVal + 1).get(colVal).distToPS = depth + 1;
+        this.graph.put(this.board.get(rowVal + 1).get(colVal),
+            this.graph.get(this.board.get(rowVal).get(colVal)) + 1);
 
         if (graph.get(this.board.get(rowVal + 1).get(colVal)) > graph.get(lastFound)) {
           lastFound = this.board.get(rowVal + 1).get(colVal);
-          depthIncreased = true;
         }
         soFar.add(this.board.get(rowVal + 1).get(colVal));
       }
@@ -235,13 +230,11 @@ class LightEmAll extends World {
           && !(soFar.contains(this.board.get(rowVal).get(colVal - 1)))) {
 
         worklist.add(this.board.get(rowVal).get(colVal - 1));
-        this.graph.put(this.board.get(rowVal).get(colVal - 1), depth + 1);
-
-        this.board.get(rowVal).get(colVal - 1).distToPS = depth + 1;
+        this.graph.put(this.board.get(rowVal).get(colVal - 1),
+            this.graph.get(this.board.get(rowVal).get(colVal)) + 1);
 
         if (graph.get(this.board.get(rowVal).get(colVal - 1)) > graph.get(lastFound)) {
           lastFound = this.board.get(rowVal).get(colVal - 1);
-          depthIncreased = true;
         }
         soFar.add(this.board.get(rowVal).get(colVal - 1));
       }
@@ -252,21 +245,14 @@ class LightEmAll extends World {
           && !(soFar.contains(this.board.get(rowVal).get(colVal + 1)))) {
 
         worklist.add(this.board.get(rowVal).get(colVal + 1));
-        this.graph.put(this.board.get(rowVal).get(colVal + 1), depth + 1);
-
-        this.board.get(rowVal).get(colVal + 1).distToPS = depth + 1;
+        this.graph.put(this.board.get(rowVal).get(colVal + 1),
+            this.graph.get(this.board.get(rowVal).get(colVal)) + 1);
 
         if (graph.get(this.board.get(rowVal).get(colVal + 1)) > graph.get(lastFound)) {
           lastFound = this.board.get(rowVal).get(colVal + 1);
-          depthIncreased = true;
         }
         soFar.add(this.board.get(rowVal).get(colVal + 1));
       }
-
-      if (depthIncreased) {
-        depth++;
-      }
-
       worklist.remove(0);
     }
 
@@ -643,9 +629,8 @@ class ExamplesGame {
     fourx4 = new LightEmAll(4, 4, 0);
     // To test a 5x5 grid
     fivex5 = new LightEmAll(5, 5, 0);
-    // To test a 4x4 grid that
+    // To test a 5x5 grid
     fivex5Power = new LightEmAll(5, 5, 1);
-
   }
 
   // Runs the program with a predetermined, easy-to-solve pattern.
@@ -880,8 +865,13 @@ class ExamplesGame {
     this.fourx4Power.board.get(1).get(0).rotate();
     this.fourx4Power.board.get(1).get(0).rotate();
     this.fourx4Power.board.get(1).get(0).rotate();
-    // t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(0).get(0),
-    // this.fourx4Power.board.get(3).get(0)), false);
+    System.out.println(this.fourx4Power.board.get(1).get(0).left);
+    System.out.println(this.fourx4Power.board.get(1).get(0).right);
+    System.out.println(this.fourx4Power.board.get(1).get(0).top);
+    System.out.println(this.fourx4Power.board.get(1).get(0).bottom);
+
+    t.checkExpect(this.fourx4Power.piecesConnected(this.fourx4Power.board.get(0).get(0),
+        this.fourx4Power.board.get(3).get(0)), false);
   }
 
   // Testing method getNodes()
@@ -922,8 +912,7 @@ class ExamplesGame {
   void testCalcRadius(Tester t) {
     initData();
     t.checkExpect(this.fourx4Power.calcRadius(), 6);
-    // The answer to 5x5 should be 8, returning 10.
-    // t.checkExpect(this.fivex5Power.calcRadius(), 8);
+    t.checkExpect(this.fivex5Power.calcRadius(), 8);
   }
 
   // Testing fractalBoard()
