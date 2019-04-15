@@ -643,7 +643,7 @@ class ExamplesGame {
 
   void initData() {
     // To use with big-bang
-    test = new LightEmAll(4, 4, 1);
+    test = new LightEmAll(5, 10, 1);
     twox2Power = new LightEmAll(2, 2, 1);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3, 0);
