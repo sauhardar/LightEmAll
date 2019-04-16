@@ -2,6 +2,7 @@ import java.util.*;
 import tester.*;
 import javalib.impworld.*;
 import java.awt.Color;
+
 import javalib.worldimages.*;
 
 // The main game class
@@ -40,7 +41,6 @@ class LightEmAll extends World {
     else if (boardType == 1) {
       this.board = this.manualBoard();
       this.fractalBoard(numRows, numCols, 0, 0);
-      // Moved the initialization of the power station to the constructor.
       this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
       this.powerCol = this.width / GamePiece.CELL_LENGTH / 2;
       this.powerRow = 0;
@@ -447,6 +447,7 @@ class LightEmAll extends World {
   }
 
   // Not used anymore
+  // Creates a board with the manual generation
   public ArrayList<ArrayList<GamePiece>> makeBoard() {
     ArrayList<ArrayList<GamePiece>> boardResult = new ArrayList<ArrayList<GamePiece>>();
     int midPointH = (this.height / GamePiece.CELL_LENGTH) / 2;
