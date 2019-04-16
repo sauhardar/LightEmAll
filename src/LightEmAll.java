@@ -6,12 +6,14 @@ import javalib.worldimages.*;
 
 // The main game class
 class LightEmAll extends World {
+  // Random seed for rotation
+  private static final Random RANDOBJ = new Random(1);
 
   // a list of columns of GamePieces
   ArrayList<ArrayList<GamePiece>> board;
   // a list of all nodes
   ArrayList<GamePiece> nodes;
-  // a list of ALL edges, including duplicates and unsorted
+  // a list of ALL unique and sorted edges
   ArrayList<Edge> allEdges;
   // a list of edges of the minimum spanning tree
   ArrayList<Edge> mst;
@@ -23,7 +25,6 @@ class LightEmAll extends World {
   int powerCol;
   int radius;
   HashMap<GamePiece, Integer> graph;
-  HashMap<String, String> representatives;
 
   LightEmAll(int numRows, int numCols, int boardType) {
 
@@ -33,6 +34,8 @@ class LightEmAll extends World {
     // 0 is manualGeneration, 1 is fractal, 2 is random
     if (boardType == 0) {
       this.board = this.makeBoard();
+      this.nodes = new ArrayList<GamePiece>();
+      this.getNodes();
     }
     else if (boardType == 1) {
       this.board = this.manualBoard();
@@ -41,6 +44,8 @@ class LightEmAll extends World {
       this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
       this.powerCol = this.width / GamePiece.CELL_LENGTH / 2;
       this.powerRow = 0;
+      this.nodes = new ArrayList<GamePiece>();
+      this.getNodes();
     }
     // When the user enters 2
     else if (boardType == 2) {
@@ -57,16 +62,34 @@ class LightEmAll extends World {
       this.board.get(0).get(0).powerStation = true;
       this.powerCol = 0;
       this.powerRow = 0;
-      // this.addToMST(); // NOT WORKING
+      this.nodes = new ArrayList<GamePiece>();
+      this.getNodes();
+      this.mst = new ArrayList<Edge>();
+      this.addToMST();
+      this.connect();
+      this.rotatePieces();
     }
-    this.nodes = new ArrayList<GamePiece>();
-    this.getNodes();
     this.graph = new HashMap<GamePiece, Integer>();
     this.initHash();
     this.radius = this.calcRadius();
     this.getPowered();
   }
 
+  // EFFECT: Rotates the wiring by a random number
+  // Rotates all the GamePieces by a random amount
+  void rotatePieces() {
+    for (ArrayList<GamePiece> row : this.board) {
+      for (GamePiece gp : row) {
+        int rand = this.RANDOBJ.nextInt(4);
+        while (rand != 0) {
+          gp.rotate();
+          rand--;
+        }
+      }
+    }
+  }
+
+  // EFFECT: Fills the allEdges field with the edges
   // Adds all the edges to the allEdges field
   void addAllEdges() {
     // In each row in the board
@@ -87,12 +110,11 @@ class LightEmAll extends World {
     }
   }
 
+  // EFFECT: The allEdges arraylist is put in non-descending order
   // Sorts the edges by weight
   void sortEdges() {
     this.allEdges.sort(new SortByWeight());
   }
-  
-  /* ADD THE VOID EFFECT STATEMENTS!! DON'T FORGET */
 
   // Determines if there already exists an edge with the given GamePieces
   boolean existsEdge(GamePiece from, GamePiece to, ArrayList<Edge> pool) {
@@ -104,16 +126,68 @@ class LightEmAll extends World {
     return false;
   }
 
-  /* I N C O M P L E T E */
-  // If the edge does not create a cycle, add it to the minimum spanning tree. 
+  // EFFECT: Adds all the appropriate edges to the MST field
+  // If the edge does not create a cycle, add it to the minimum spanning tree.
   void addToMST() {
+    HashMap<String, String> representatives = new HashMap<String, String>();
+    ArrayList<Edge> sortedEdges = new ArrayList<Edge>(this.allEdges); // an alias
+
+    // Initially links each node to itself
     for (GamePiece gp : this.nodes) {
-      this.representatives.put(new Integer(gp.col).toString() + new Integer(gp.row).toString(), 
-          new Integer(gp.col).toString() + new Integer(gp.row).toString());
+      representatives.put(gp.toString(), gp.toString());
+    }
+
+    while (!mstDone(representatives)) {
+      Edge curr = sortedEdges.remove(0);
+      if (this.findRep(representatives, curr.fromNode.toString())
+          .equals(this.findRep(representatives, curr.toNode.toString()))) {
+        // Ignore this edge
+      }
+      else {
+        this.mst.add(curr);
+        representatives.put(findRep(representatives, curr.fromNode.toString()),
+            findRep(representatives, curr.toNode.toString()));
+        // method that updates all nodes that previously had the rep that is changed
+      }
     }
   }
-  
-  
+
+  // EFFECT: Adds the wires to each node for each GamePiece
+  // Connects all the wires for each GamePiece
+  void connect() {
+    for (Edge e : this.mst) {
+      e.connectNodes();
+    }
+  }
+
+  // Finds the representative of each Node
+  String findRep(HashMap<String, String> reps, String node) {
+    if (reps.get(node).equals(node)) {
+      return node;
+    }
+    else {
+      return findRep(reps, reps.get(node));
+    }
+  }
+
+  // Determines if MST has been constructed (only one representative is itself)
+  boolean mstDone(HashMap<String, String> representatives) {
+    int numSelf = 0;
+
+    Iterator<Map.Entry<String, String>> it = representatives.entrySet().iterator();
+
+    while (it.hasNext()) {
+      Map.Entry<String, String> edge = it.next();
+      if (edge.getKey().equals(edge.getValue())) {
+        numSelf++;
+      }
+    }
+    if (numSelf > 1) {
+      return false;
+    }
+    return true;
+  }
+
   // EFFECT: Sets isPowered to true if the cell has power
   // Runs through the GamePieces and determines if they are powered
   void getPowered() {
@@ -584,7 +658,7 @@ class LightEmAll extends World {
 // A function object comparator that helps sort the Edges by weight
 class SortByWeight implements Comparator<Edge> {
 
-  // Compares two given edges and returns -1 if the first is 
+  // Compares two given edges and returns -1 if the first is
   // smaller, 1 if the first is greater, and 0 if they are equal.
   public int compare(Edge edge1, Edge edge2) {
     if (edge1.weight < edge2.weight) {
@@ -784,6 +858,12 @@ class GamePiece {
     this.bottom = prevRight;
     this.left = prevBot;
   }
+
+  // Returns a String representation of each GamePiece's location
+  public String toString() {
+    return "(" + new Integer(this.col + 1).toString() + ",  " + new Integer(this.row + 1).toString()
+        + ")";
+  }
 }
 
 // Represents a wire; used for Kruskal's algorithm
@@ -799,6 +879,31 @@ class Edge {
     this.toNode = toNode;
     // Can have a weight of any number [0, 99]
     this.weight = Edge.RANDOBJ.nextInt(100);
+  }
+
+  // EFFECT: Turns on certain connects to connect an actual edge
+  // Connects the GamePieces that are part of an edge
+  void connectNodes() {
+    if (this.fromNode.col == this.toNode.col) {
+      if (this.fromNode.row > this.toNode.row) {
+        this.fromNode.top = true;
+        this.toNode.bottom = true;
+      }
+      else {
+        this.fromNode.bottom = true;
+        this.toNode.top = true;
+      }
+    }
+    else {
+      if (this.fromNode.col > this.toNode.col) {
+        this.fromNode.left = true;
+        this.toNode.right = true;
+      }
+      else {
+        this.fromNode.right = true;
+        this.toNode.left = true;
+      }
+    }
   }
 }
 
@@ -832,24 +937,13 @@ class ExamplesGame {
     fivex5Power = new LightEmAll(5, 5, 1);
 
     // To test kruskal's:
-    kruskalsBoard = new LightEmAll(3, 3, 2);
+    kruskalsBoard = new LightEmAll(4, 5, 2);
   }
 
   // Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-    // test.bigBang(test.width, test.height, .003);
-    int i = 0;
-    for (Edge edge : this.kruskalsBoard.allEdges) {
-//      System.out.println("From node: " + edge.fromNode.col + ", " + edge.fromNode.row);
-//      System.out.println("To node: " + edge.toNode.col + ", " + edge.toNode.row);
-//      System.out.println("Weight: " + edge.weight);
-//      System.out.println("\n");
-      
-      // Printing to see if the edges are sorted.
-      i++;
-      System.out.println("Edge #" + i + " " + edge.weight);
-      }
+    this.kruskalsBoard.bigBang(kruskalsBoard.width, kruskalsBoard.height, .003);
   }
 
   // Testing the makeScene() method
