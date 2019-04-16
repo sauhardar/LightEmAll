@@ -4,12 +4,15 @@ import javalib.impworld.*;
 import java.awt.Color;
 import javalib.worldimages.*;
 
+// The main game class
 class LightEmAll extends World {
 
   // a list of columns of GamePieces
   ArrayList<ArrayList<GamePiece>> board;
   // a list of all nodes
   ArrayList<GamePiece> nodes;
+  // a list of ALL edges, including duplicates and unsorted
+  ArrayList<Edge> allEdges;
   // a list of edges of the minimum spanning tree
   ArrayList<Edge> mst;
   // the width and height of the board
@@ -20,6 +23,7 @@ class LightEmAll extends World {
   int powerCol;
   int radius;
   HashMap<GamePiece, Integer> graph;
+  HashMap<String, String> representatives;
 
   LightEmAll(int numRows, int numCols, int boardType) {
 
@@ -38,7 +42,23 @@ class LightEmAll extends World {
       this.powerCol = this.width / GamePiece.CELL_LENGTH / 2;
       this.powerRow = 0;
     }
-
+    // When the user enters 2
+    else if (boardType == 2) {
+      this.board = this.manualBoard();
+      // Assigns neighbors to each GamePiece
+      for (ArrayList<GamePiece> row : this.board) {
+        for (GamePiece gp : row) {
+          gp.assignNeighbors(this.board);
+        }
+      }
+      this.allEdges = new ArrayList<Edge>();
+      this.addAllEdges();
+      this.sortEdges();
+      this.board.get(0).get(0).powerStation = true;
+      this.powerCol = 0;
+      this.powerRow = 0;
+      // this.addToMST(); // NOT WORKING
+    }
     this.nodes = new ArrayList<GamePiece>();
     this.getNodes();
     this.graph = new HashMap<GamePiece, Integer>();
@@ -47,6 +67,53 @@ class LightEmAll extends World {
     this.getPowered();
   }
 
+  // Adds all the edges to the allEdges field
+  void addAllEdges() {
+    // In each row in the board
+    for (ArrayList<GamePiece> row : this.board) {
+      // in each gp in the row
+      for (GamePiece gp : row) {
+        // for each neighbhor
+        for (GamePiece neighbhor : gp.neighbors) {
+          // Ensures the same edge is not added twice.
+          // A to B is the same as B to A.
+          if (this.existsEdge(neighbhor, gp, this.allEdges)) {
+          }
+          else {
+            this.allEdges.add(new Edge(gp, neighbhor));
+          }
+        }
+      }
+    }
+  }
+
+  // Sorts the edges by weight
+  void sortEdges() {
+    this.allEdges.sort(new SortByWeight());
+  }
+  
+  /* ADD THE VOID EFFECT STATEMENTS!! DON'T FORGET */
+
+  // Determines if there already exists an edge with the given GamePieces
+  boolean existsEdge(GamePiece from, GamePiece to, ArrayList<Edge> pool) {
+    for (Edge edge : pool) {
+      if (edge.fromNode.samePiece(from) && edge.toNode.samePiece(to)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /* I N C O M P L E T E */
+  // If the edge does not create a cycle, add it to the minimum spanning tree. 
+  void addToMST() {
+    for (GamePiece gp : this.nodes) {
+      this.representatives.put(new Integer(gp.col).toString() + new Integer(gp.row).toString(), 
+          new Integer(gp.col).toString() + new Integer(gp.row).toString());
+    }
+  }
+  
+  
   // EFFECT: Sets isPowered to true if the cell has power
   // Runs through the GamePieces and determines if they are powered
   void getPowered() {
@@ -62,11 +129,6 @@ class LightEmAll extends World {
       }
       gp.distToPS = this.graph.get(gp);
     }
-  }
-
-  // Determines if two GamePieces are equal (the same)
-  boolean samePiece(GamePiece gp1, GamePiece gp2) {
-    return (gp1.row == gp2.row) && (gp1.col == gp2.col) && (gp1.top == gp2.top);
   }
 
   // Determines if two GamePieces are connected
@@ -90,7 +152,7 @@ class LightEmAll extends World {
       if (soFar.contains(this.board.get(rowVal).get(colVal - 1))) {
         // Do Nothing
       }
-      else if (samePiece(this.board.get(rowVal).get(colVal - 1), other)) {
+      else if (this.board.get(rowVal).get(colVal - 1).samePiece(other)) {
         return true;
       }
       else {
@@ -111,7 +173,7 @@ class LightEmAll extends World {
       if (soFar.contains(this.board.get(rowVal).get(colVal + 1))) {
         // Do Nothing
       }
-      else if (samePiece(this.board.get(rowVal).get(colVal + 1), other)) {
+      else if (this.board.get(rowVal).get(colVal + 1).samePiece(other)) {
         return true;
       }
       else {
@@ -131,7 +193,7 @@ class LightEmAll extends World {
       if (soFar.contains(this.board.get(rowVal - 1).get(colVal))) {
         // Do Nothing
       }
-      else if (samePiece(this.board.get(rowVal - 1).get(colVal), other)) {
+      else if (this.board.get(rowVal - 1).get(colVal).samePiece(other)) {
         return true;
       }
       else {
@@ -152,7 +214,7 @@ class LightEmAll extends World {
       if (soFar.contains(this.board.get(rowVal + 1).get(colVal))) {
         // Do Nothing
       }
-      else if (samePiece(this.board.get(rowVal + 1).get(colVal), other)) {
+      else if (this.board.get(rowVal + 1).get(colVal).samePiece(other)) {
         return true;
       }
       else {
@@ -165,7 +227,7 @@ class LightEmAll extends World {
 
   // Determines if two neighbors are connected
   boolean twoPiecesConnected(GamePiece target, GamePiece other) {
-    if (samePiece(target, other)) {
+    if (target.samePiece(other)) {
       return true;
     }
 
@@ -185,7 +247,7 @@ class LightEmAll extends World {
     return false;
   }
 
-  // Flattes the graph into a list of GamePieces
+  // Flattens the graph into a list of GamePieces
   void getNodes() {
     for (ArrayList<GamePiece> row : this.board) {
       for (GamePiece gp : row) {
@@ -396,7 +458,7 @@ class LightEmAll extends World {
       this.fractalBoard(1, (int) Math.ceil(numCols / 2), currRow, currCol);
       this.fractalBoard(1, numCols / 2, currRow, (int) Math.ceil(currCol / 2));
     }
-
+    // Other base cases:
     else if (numRows == 1 && numCols == 2) {
       this.board.get(startRow).get(startCol).right = true;
       this.board.get(startRow).get(startCol + 1).left = true;
@@ -430,6 +492,7 @@ class LightEmAll extends World {
       fractalBoard(numRows / 2, numCols / 2, currRow + (int) Math.ceil(numRows / 2.0),
           currCol + (int) Math.ceil(numCols / 2.0));
     }
+    // Sets the powerstation to be the middle of the top row
     this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
     this.powerCol = this.width / GamePiece.CELL_LENGTH / 2;
     this.powerRow = 0;
@@ -504,7 +567,6 @@ class LightEmAll extends World {
   boolean allConnected() {
     for (GamePiece gp : this.nodes) {
       if (!gp.isPowered) {
-        // System.out.println("Row: " + gp.row + " Col: " + gp.col);
         return false;
       }
     }
@@ -519,6 +581,25 @@ class LightEmAll extends World {
   }
 }
 
+// A function object comparator that helps sort the Edges by weight
+class SortByWeight implements Comparator<Edge> {
+
+  // Compares two given edges and returns -1 if the first is 
+  // smaller, 1 if the first is greater, and 0 if they are equal.
+  public int compare(Edge edge1, Edge edge2) {
+    if (edge1.weight < edge2.weight) {
+      return -1;
+    }
+    else if (edge1.weight > edge2.weight) {
+      return 1;
+    }
+    else {
+      return 0;
+    }
+  }
+}
+
+// Represents one of the GamePieces
 class GamePiece {
   static final int CELL_LENGTH = 40;
 
@@ -531,7 +612,9 @@ class GamePiece {
   boolean powerStation;
   boolean isPowered;
   int distToPS;
+  ArrayList<GamePiece> neighbors;
 
+  // Constructor where the GamePiece doesn't know its neighbors.
   GamePiece(int row, int col, boolean left, boolean right, boolean top, boolean bottom,
       boolean powerStation) {
     this.row = row;
@@ -543,6 +626,85 @@ class GamePiece {
     this.powerStation = powerStation;
     this.isPowered = false;
     this.distToPS = 0;
+    this.neighbors = new ArrayList<GamePiece>();
+  }
+
+  // Constructor where the GamePiece knows its neighbors.
+  GamePiece(int row, int col, boolean left, boolean right, boolean top, boolean bottom,
+      boolean powerStation, ArrayList<GamePiece> neighbors) {
+    this.row = row;
+    this.col = col;
+    this.left = left;
+    this.right = right;
+    this.top = top;
+    this.bottom = bottom;
+    this.powerStation = powerStation;
+    this.isPowered = false;
+    this.distToPS = 0;
+    this.neighbors = new ArrayList<GamePiece>();
+  }
+
+  // Determines if the given piece is the same as this one
+  boolean samePiece(GamePiece given) {
+    return (this.row == given.row && this.col == given.col);
+  }
+
+  // Assigns neighbors to this GamePiece depending on its available neighbors
+  void assignNeighbors(ArrayList<ArrayList<GamePiece>> board) {
+    // If top left piece:
+    if (this.row == 0 && this.col == 0) {
+      this.neighbors.add(board.get(this.row).get(this.col + 1));
+      this.neighbors.add(board.get(this.row + 1).get(this.col));
+    }
+    // If bottom left piece:
+    else if (this.row == (board.size() - 1) && this.col == 0) {
+      this.neighbors.add(board.get(this.row - 1).get(this.col));
+      this.neighbors.add(board.get(this.row).get(this.col + 1));
+    }
+    // If top right piece:
+    else if (this.row == 0 && this.col == (board.get(0).size() - 1)) {
+      this.neighbors.add(board.get(this.row).get(this.col - 1));
+      this.neighbors.add(board.get(this.row + 1).get(this.col));
+    }
+    // If bottom right piece:
+    else if (this.row == (board.size() - 1) && this.col == (board.get(0).size() - 1)) {
+      this.neighbors.add(board.get(this.row - 1).get(this.col));
+      this.neighbors.add(board.get(this.row).get(this.col - 1));
+    }
+    // If top row:
+    else if (this.row == 0) {
+      this.neighbors.add(board.get(this.row).get(this.col - 1));
+      this.neighbors.add(board.get(this.row).get(this.col + 1));
+      this.neighbors.add(board.get(this.row + 1).get(this.col));
+    }
+    // If bottom row:
+    else if (this.row == (board.size() - 1)) {
+      this.neighbors.add(board.get(this.row).get(this.col - 1));
+      this.neighbors.add(board.get(this.row).get(this.col + 1));
+      this.neighbors.add(board.get(this.row - 1).get(this.col));
+    }
+    // If leftmost col:
+    else if (this.col == 0) {
+      this.neighbors.add(board.get(this.row - 1).get(this.col));
+      this.neighbors.add(board.get(this.row + 1).get(this.col));
+      this.neighbors.add(board.get(this.row).get(this.col + 1));
+    }
+    // If rightmost col:
+    else if (this.col == (board.get(0).size() - 1)) {
+      this.neighbors.add(board.get(this.row - 1).get(this.col));
+      this.neighbors.add(board.get(this.row + 1).get(this.col));
+      this.neighbors.add(board.get(this.row).get(this.col - 1));
+    }
+    else {
+      // adds the piece to the LEFT
+      this.neighbors.add(board.get(this.row).get(this.col - 1));
+      // adds the piece to the RIGHT
+      this.neighbors.add(board.get(this.row).get(this.col + 1));
+      // adds the piece ABOVE
+      this.neighbors.add(board.get(this.row - 1).get(this.col));
+      // adds the piece BELOW
+      this.neighbors.add(board.get(this.row + 1).get(this.col));
+    }
   }
 
   // Draws each individual GamePiece
@@ -624,13 +786,23 @@ class GamePiece {
   }
 }
 
+// Represents a wire; used for Kruskal's algorithm
 class Edge {
+  private static final Random RANDOBJ = new Random(1);
+
   GamePiece fromNode;
   GamePiece toNode;
   int weight;
+
+  Edge(GamePiece fromNode, GamePiece toNode) {
+    this.fromNode = fromNode;
+    this.toNode = toNode;
+    // Can have a weight of any number [0, 99]
+    this.weight = Edge.RANDOBJ.nextInt(100);
+  }
 }
 
-//All the examples and tests.
+// All the examples and tests.
 class ExamplesGame {
   LightEmAll test;
   LightEmAll twox2Power;
@@ -640,10 +812,11 @@ class ExamplesGame {
   LightEmAll fourx4Power;
   LightEmAll fivex5;
   LightEmAll fivex5Power;
+  LightEmAll kruskalsBoard;
 
   void initData() {
     // To use with big-bang
-    test = new LightEmAll(5, 10, 1);
+    test = new LightEmAll(10, 12, 1);
     twox2Power = new LightEmAll(2, 2, 1);
     // To test a 3x3 grid
     threex3 = new LightEmAll(3, 3, 0);
@@ -657,12 +830,26 @@ class ExamplesGame {
     fivex5 = new LightEmAll(5, 5, 0);
     // To test a 5x5 grid
     fivex5Power = new LightEmAll(5, 5, 1);
+
+    // To test kruskal's:
+    kruskalsBoard = new LightEmAll(3, 3, 2);
   }
 
   // Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-    test.bigBang(test.width, test.height, .003);
+    // test.bigBang(test.width, test.height, .003);
+    int i = 0;
+    for (Edge edge : this.kruskalsBoard.allEdges) {
+//      System.out.println("From node: " + edge.fromNode.col + ", " + edge.fromNode.row);
+//      System.out.println("To node: " + edge.toNode.col + ", " + edge.toNode.row);
+//      System.out.println("Weight: " + edge.weight);
+//      System.out.println("\n");
+      
+      // Printing to see if the edges are sorted.
+      i++;
+      System.out.println("Edge #" + i + " " + edge.weight);
+      }
   }
 
   // Testing the makeScene() method
