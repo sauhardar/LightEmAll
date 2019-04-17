@@ -20,7 +20,7 @@ import javalib.worldimages.*;
 class LightEmAll extends World {
   // Random seed for rotation
   private final Random RANDOBJ = new Random(1);
-  private final int CURRSEC = (int) (System.currentTimeMillis() / 1000);
+  private int CURRSEC = (int) (System.currentTimeMillis() / 1000);
 
   // a list of columns of GamePieces
   ArrayList<ArrayList<GamePiece>> board;
@@ -121,7 +121,6 @@ class LightEmAll extends World {
           // Ensures the same edge is not added twice.
           // A to B is the same as B to A.
           if (this.existsEdge(neighbhor, gp, this.allEdges)) {
-            // Do nothing
           }
           else {
             this.allEdges.add(new Edge(gp, neighbhor));
@@ -463,6 +462,11 @@ class LightEmAll extends World {
     WorldImage time = new TextImage("Time: " + this.processTime(), this.width / 22, Color.white);
     WorldImage score = new TextImage("Moves: " + this.score, this.width / 22, Color.white);
     WorldImage gameTitle = new TextImage(this.processTitle(), this.width / 18, Color.white);
+    WorldImage resetText = new TextImage("RESET", extraSpace / 8, Color.white);
+    WorldImage resetButton = new RectangleImage(extraSpace / 2, extraSpace / 4, OutlineMode.SOLID,
+        Color.black);
+
+    resetButton = new OverlayImage(resetText, resetButton);
 
     extraSpaceRect = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, time, -indentSpace,
         -indentSpace, extraSpaceRect);
@@ -470,6 +474,8 @@ class LightEmAll extends World {
         indentSpace, extraSpaceRect);
     extraSpaceRect = new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.MIDDLE, gameTitle,
         -indentSpace * 3, 0, extraSpaceRect);
+    extraSpaceRect = new OverlayOffsetAlign(AlignModeX.RIGHT, AlignModeY.MIDDLE, resetButton,
+        indentSpace, 0, extraSpaceRect);
 
     WorldScene scene = new WorldScene(this.width, this.height);
 
@@ -653,9 +659,14 @@ class LightEmAll extends World {
   // Handles all clicking when clicking within the game board
   public void onMouseClicked(Posn mousePos, String button) {
 
-    if (mousePos.y >= (this.boardHeight - this.height)) {
+    int extraSpace = this.boardHeight - this.height;
+    int buttonIndentSpace = extraSpace / 10;
+    int resetButtonHeight = extraSpace / 4;
+    int resetButtonWidth = extraSpace / 2;
+
+    if (mousePos.y >= extraSpace) {
       int posX = mousePos.x / GamePiece.CELL_LENGTH;
-      int posY = (mousePos.y - (this.boardHeight - this.height)) / GamePiece.CELL_LENGTH;
+      int posY = (mousePos.y - extraSpace) / GamePiece.CELL_LENGTH;
 
       GamePiece gp = this.board.get(posY).get(posX);
 
@@ -664,6 +675,35 @@ class LightEmAll extends World {
         gp.rotate();
       }
       this.score++;
+    }
+    // Reset button:
+    if (button.equals("LeftButton") && mousePos.y >= extraSpace / 2 - (resetButtonHeight / 2)
+        && mousePos.y <= extraSpace / 2 + (resetButtonHeight / 2)
+        && mousePos.x >= this.width - buttonIndentSpace - resetButtonWidth
+        && mousePos.x <= this.width - buttonIndentSpace) {
+      this.score = 0;
+      CURRSEC = (int) (System.currentTimeMillis() / 1000);
+
+      if (this.boardType == 0) {
+        this.board = this.makeBoard();
+      }
+      else if (this.boardType == 1) {
+        this.board = this.manualBoard();
+        this.fractalBoard(this.height / GamePiece.CELL_LENGTH, this.width / GamePiece.CELL_LENGTH,
+            0, 0);
+        this.board.get(0).get(this.width / GamePiece.CELL_LENGTH / 2).powerStation = true;
+        this.powerCol = this.width / GamePiece.CELL_LENGTH / 2;
+        this.powerRow = 0;
+        this.nodes = new ArrayList<GamePiece>();
+        this.getNodes();
+      }
+      else if (this.boardType == 2) {
+        this.rotatePieces();
+        this.board.get(this.powerRow).get(this.powerCol).powerStation = false;
+        this.powerCol = 0;
+        this.powerRow = 0;
+        this.board.get(this.powerRow).get(this.powerCol).powerStation = true;
+      }
     }
   }
 
@@ -952,14 +992,13 @@ class GamePiece {
 
   // Returns a String representation of each GamePiece's location
   public String toString() {
-    return "(" + new Integer(this.col + 1).toString() + ", " + new Integer(this.row + 1).toString()
+    return "(" + new Integer(this.col + 1).toString() + ",  " + new Integer(this.row + 1).toString()
         + ")";
   }
 }
 
 // Represents a wire; used for Kruskal's algorithm
 class Edge {
-
   private static final Random RANDOBJ = new Random(1);
 
   GamePiece fromNode;
@@ -1029,16 +1068,17 @@ class ExamplesGame {
     fivex5Power = new LightEmAll(5, 5, 1);
 
     // To test kruskal's:
-    kruskalsBoard = new LightEmAll(5, 5, 2);
+    kruskalsBoard = new LightEmAll(8,8, 2);
   }
 
-  // Runs the program with a predetermined, easy-to-solve pattern.
+// Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-    //this.kruskalsBoard.bigBang(this.kruskalsBoard.width, this.kruskalsBoard.boardHeight, .003);
+    this.kruskalsBoard.bigBang(this.kruskalsBoard.width,
+    this.kruskalsBoard.boardHeight, .003);
   }
 
-  // Testing the makeScene() method
+// Testing the makeScene() method
   void testMakeScene(Tester t) {
     initData();
 
@@ -1106,11 +1146,11 @@ class ExamplesGame {
     }
     sceneFour.placeImageXY(extraSpaceRect4, this.fourx4Power.width / 2, extraSpace4 / 2);
 
-//    t.checkExpect(this.threex3Power.makeScene(), sceneThree);
-//    t.checkExpect(this.fourx4Power.makeScene(), sceneFour);
+// t.checkExpect(this.threex3Power.makeScene(), sceneThree);
+// t.checkExpect(this.fourx4Power.makeScene(), sceneFour);
   }
 
-  // Testing the method makeBoard()
+// Testing the method makeBoard()
   void testMakeBoard(Tester t) {
 
     initData();
@@ -1185,7 +1225,7 @@ class ExamplesGame {
         && this.fivex5.board.get(2).get(2).top && this.fivex5.board.get(2).get(2).bottom, true);
   }
 
-  // Testing the method manualBoad()
+// Testing the method manualBoad()
   void testManualBoard(Tester t) {
     initData();
 
@@ -1218,7 +1258,7 @@ class ExamplesGame {
     t.checkExpect(this.threex3.manualBoard(), answer);
   }
 
-  // Testing the whether clicking rotates the game pieces correctly.
+// Testing the whether clicking rotates the game pieces correctly.
   void testOnMouseClicked(Tester t) {
     initData();
     t.checkExpect(this.threex3.board.get(0).get(0).bottom, false);
@@ -1236,7 +1276,7 @@ class ExamplesGame {
     t.checkExpect(this.fivex5.board.get(2).get(2).powerStation, true);
   }
 
-  // Testing whether the pieces are connected
+// Testing whether the pieces are connected
   void testTwoPiecesConnected(Tester t) {
     initData();
     t.checkExpect(this.threex3.twoPiecesConnected(this.threex3.board.get(0).get(0),
@@ -1274,7 +1314,7 @@ class ExamplesGame {
         this.fourx4Power.board.get(2).get(0)), false);
   }
 
-  // Testing rotation for various game pieces.
+// Testing rotation for various game pieces.
   void testRotate(Tester t) {
     initData();
     // top right piece
@@ -1297,7 +1337,7 @@ class ExamplesGame {
         && this.fivex5.board.get(2).get(2).right && this.fivex5.board.get(2).get(2).left, true);
   }
 
-  // testing getPowered()
+// testing getPowered()
   void testGetPowered(Tester t) {
     initData();
     t.checkExpect(this.fourx4Power.board.get(0).get(0).isPowered, false);
@@ -1307,7 +1347,7 @@ class ExamplesGame {
     t.checkExpect(this.fourx4Power.board.get(3).get(2).isPowered, true);
   }
 
-  // testing piecesConnected()
+// testing piecesConnected()
   void testPiecesConnected(Tester t) {
     initData();
     // piecesConnected()
@@ -1355,7 +1395,7 @@ class ExamplesGame {
         this.fourx4Power.board.get(3).get(0), new ArrayList<GamePiece>()), false);
   }
 
-  // Testing method getNodes()
+// Testing method getNodes()
   void testGetNodes(Tester t) {
     initData();
     this.fourx4Power.nodes.clear();
@@ -1365,7 +1405,7 @@ class ExamplesGame {
     t.checkExpect(this.fourx4Power.nodes.size(), 16);
   }
 
-  // Testing initHash()
+// Testing initHash()
   void testInitHash(Tester t) {
     initData();
     this.fourx4Power.graph.clear();
@@ -1377,7 +1417,7 @@ class ExamplesGame {
     t.checkExpect(this.fourx4Power.graph.get(this.fourx4Power.board.get(0).get(3)), -1);
   }
 
-  // Testing setDepths((
+// Testing setDepths((
   void testSetDepths(Tester t) {
     initData();
     // Finds the farthest GamePiece from the given GamePiece
@@ -1389,14 +1429,14 @@ class ExamplesGame {
 
   }
 
-  // Testing calcRadius
+// Testing calcRadius
   void testCalcRadius(Tester t) {
     initData();
     t.checkExpect(this.fourx4Power.calcRadius(), 6);
     t.checkExpect(this.fivex5Power.calcRadius(), 8);
   }
 
-  // Testing fractalBoard()
+// Testing fractalBoard()
   void testFractalBoard(Tester t) {
     initData();
 
@@ -1411,7 +1451,7 @@ class ExamplesGame {
     t.checkExpect(this.fourx4Power.board.get(3).get(2).bottom, false);
   }
 
-  // Testing drawPiece()
+// Testing drawPiece()
   void testDrawPiece(Tester t) {
     initData();
     // Top left peice that is not powered
@@ -1466,7 +1506,7 @@ class ExamplesGame {
     t.checkExpect(this.fourx4Power.board.get(1).get(2).drawPiece(6), result3);
   }
 
-  // Testing worldEnds()
+// Testing worldEnds()
   void testWorldEnds(Tester t) {
     initData();
     // t.checkExpect(this.fourx4Power.worldEnds(), new WorldEnd(false,
@@ -1479,7 +1519,7 @@ class ExamplesGame {
     // this.twox2Power.finalScene()));
   }
 
-  // Testing the method allConnected()
+// Testing the method allConnected()
   void testAllConnected(Tester t) {
     initData();
     t.checkExpect(this.fourx4Power.allConnected(), false);
@@ -1490,7 +1530,7 @@ class ExamplesGame {
     t.checkExpect(this.twox2Power.allConnected(), true);
   }
 
-  // Testing the method finalScene()
+// Testing the method finalScene()
   void testFinalScene(Tester t) {
     initData();
 
@@ -1509,7 +1549,7 @@ class ExamplesGame {
     // t.checkExpect(this.twox2Power.finalScene(), result);
   }
 
-  // Tests the method processTitle()
+// Tests the method processTitle()
   void testProcessTitle(Tester t) {
     initData();
     t.checkExpect(this.fivex5.processTitle(), "Manual Generation");
@@ -1517,12 +1557,12 @@ class ExamplesGame {
     t.checkExpect(this.kruskalsBoard.processTitle(), "Kruskal's Enigma");
   }
 
-  // Tests the method processTime()
+// Tests the method processTime()
   void testProcessTime(Tester t) {
     // Why are we not just using the onTick
   }
 
-  // Tests the method mstDone()
+// Tests the method mstDone()
   void testMstDone(Tester t) {
     initData();
     HashMap<String, String> tester = new HashMap<String, String>();
@@ -1533,7 +1573,7 @@ class ExamplesGame {
     t.checkExpect(this.kruskalsBoard.mstDone(tester), true);
   }
 
-  // Tests the findRep() method
+// Tests the findRep() method
   void testFindRep(Tester t) {
     initData();
 
@@ -1547,17 +1587,17 @@ class ExamplesGame {
     t.checkExpect(this.kruskalsBoard.findRep(tester, "Three"), "One");
   }
 
-  // Tests the connect() method
+// Tests the connect() method
   /* Not sure how to test */
   void testConnect(Tester t) {
     initData();
     Edge e = new Edge(this.kruskalsBoard.board.get(0).get(0),
         this.kruskalsBoard.board.get(0).get(1));
 
-    //t.checkExpect(this.kruskalsBoard.board.get(0).get(0).top, true);
+    // t.checkExpect(this.kruskalsBoard.board.get(0).get(0).top, true);
   }
 
-  // Tests the addToMst() method
+// Tests the addToMst() method
   /* NOT COMPLETE */
   void testAddToMST(Tester t) {
     initData();
@@ -1566,7 +1606,7 @@ class ExamplesGame {
     t.checkExpect(this.kruskalsBoard.mst.get(0), result);
   }
 
-  // Testing the method existsEdge()
+// Testing the method existsEdge()
   void testExistsEdge(Tester t) {
     initData();
 
@@ -1584,7 +1624,7 @@ class ExamplesGame {
         this.kruskalsBoard.board.get(0).get(1), testEdge), false);
   }
 
-  // Testing the method sortEdges()
+// Testing the method sortEdges()
   void testSortEdges(Tester t) {
     initData();
 
@@ -1600,7 +1640,7 @@ class ExamplesGame {
         false);
   }
 
-  // Testing the addAllEdges() method
+// Testing the addAllEdges() method
   void testAddAllEdges(Tester t) {
     initData();
     t.checkExpect(this.kruskalsBoard.allEdges.size(), 40);
@@ -1610,7 +1650,7 @@ class ExamplesGame {
 
   }
 
-  // Testing the compare() method
+// Testing the compare() method
   void testCompare(Tester t) {
     initData();
     this.kruskalsBoard.sortEdges();
@@ -1627,7 +1667,7 @@ class ExamplesGame {
     t.checkExpect(new SortByWeight().compare(e1, e1), 0);
   }
 
-  // Testing the assignNeighbors() method
+// Testing the assignNeighbors() method
   void testAssignNeighbors(Tester t) {
     initData();
 
@@ -1683,14 +1723,14 @@ class ExamplesGame {
     t.checkExpect(this.threex3Power.board.get(2).get(2).neighbors, neighbor22);
   }
 
-  // Testing the toString() method
+// Testing the toString() method
   void testToString(Tester t) {
     initData();
 
     t.checkExpect(this.kruskalsBoard.board.get(0).get(0).toString(), "(1, 1)");
   }
 
-  // Testing the connectNodes() method
+// Testing the connectNodes() method
   void testConnectNodes(Tester t) {
     initData();
     Edge e = new Edge(this.kruskalsBoard.board.get(0).get(0),
