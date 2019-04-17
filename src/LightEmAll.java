@@ -10,15 +10,16 @@ import javalib.worldimages.*;
  * 2. Gradient power line
  * 3. Score
  * 4. Reset button
- * 5. Ability to play different types of games (1. manualGeneration 2. Fractal board 3. Kruskal's algorithm)
- * The boardHeight field was necessary because... !!! FILL THIS
+ * 5. Ability to play different types of games
+ * (1. manualGeneration 2. Fractal board 3. Kruskal's algorithm)
+ * The boardHeight field was necessary because we needed to add timer and score
  * */
 
 // The main game class
 class LightEmAll extends World {
   // Random seed for rotation
   private final Random RANDOBJ = new Random(1);
-  public int CURRSEC = (int) (System.currentTimeMillis() / 1000);
+  public int currSec = (int) (System.currentTimeMillis() / 1000);
 
   // a list of columns of GamePieces
   ArrayList<ArrayList<GamePiece>> board;
@@ -119,6 +120,7 @@ class LightEmAll extends World {
           // Ensures the same edge is not added twice.
           // A to B is the same as B to A.
           if (this.existsEdge(neighbhor, gp, this.allEdges)) {
+            // DON'T ADD EDGE
           }
           else {
             this.allEdges.add(new Edge(gp, neighbhor));
@@ -200,10 +202,7 @@ class LightEmAll extends World {
         numSelf++;
       }
     }
-    if (numSelf > 1) {
-      return false;
-    }
-    return true;
+    return numSelf <= 1;
   }
 
   // EFFECT: Sets isPowered to true if the cell has power
@@ -503,7 +502,7 @@ class LightEmAll extends World {
 
   // Returns the correctly formatted time as String, accounting for minutes
   String processTime() {
-    int seconds = (int) (System.currentTimeMillis() / 1000) - CURRSEC;
+    int seconds = (int) (System.currentTimeMillis() / 1000) - currSec;
 
     int min = seconds / 60;
     seconds = seconds % 60;
@@ -679,9 +678,8 @@ class LightEmAll extends World {
         && mousePos.y <= extraSpace / 2 + (resetButtonHeight / 2)
         && mousePos.x >= this.width - buttonIndentSpace - resetButtonWidth
         && mousePos.x <= this.width - buttonIndentSpace) {
-      System.out.println(mousePos.y + " " + mousePos.x);
       this.score = 0;
-      CURRSEC = (int) (System.currentTimeMillis() / 1000);
+      currSec = (int) (System.currentTimeMillis() / 1000);
 
       if (this.boardType == 0) {
         this.board = this.makeBoard();
@@ -1073,8 +1071,7 @@ class ExamplesGame {
   // Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-//     this.kruskalsBoard.bigBang(this.kruskalsBoard.width,
-//     this.kruskalsBoard.boardHeight, .003);
+    this.kruskalsBoard.bigBang(this.kruskalsBoard.width, this.kruskalsBoard.boardHeight, .003);
   }
 
   // Testing the makeScene() method
@@ -1086,7 +1083,7 @@ class ExamplesGame {
     this.threex3Power.radius = this.threex3Power.calcRadius();
     this.threex3Power.getPowered();
 
-    this.threex3Power.CURRSEC = (int) (System.currentTimeMillis() / 1000);
+    this.threex3Power.currSec = (int) (System.currentTimeMillis() / 1000);
 
     WorldImage extraSpaceRect3 = new RectangleImage(this.threex3Power.width, extraSpace3,
         OutlineMode.SOLID, Color.DARK_GRAY);
@@ -1126,7 +1123,7 @@ class ExamplesGame {
     this.fourx4Power.radius = this.fourx4Power.calcRadius();
     this.fourx4Power.getPowered();
 
-    this.fourx4Power.CURRSEC = (int) (System.currentTimeMillis() / 1000);
+    this.fourx4Power.currSec = (int) (System.currentTimeMillis() / 1000);
 
     WorldImage extraSpaceRect4 = new RectangleImage(this.fourx4Power.width, extraSpace4,
         OutlineMode.SOLID, Color.DARK_GRAY);
