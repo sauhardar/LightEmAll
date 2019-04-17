@@ -2,13 +2,25 @@ import java.util.*;
 import tester.*;
 import javalib.impworld.*;
 import java.awt.Color;
+import java.time.*;
 
 import javalib.worldimages.*;
+
+/* NOTES FOR EXTRA CREDIT:
+ * Implemented for extra credit:
+ * 1. Timer
+ * 2. Gradient power line
+ * 3. Score
+ * 4. Reset button
+ * 5. Ability to play different types of games (1. manualGeneration 2. Fractal board 3. Kruskal's algorithm)
+ * The boardHeight field was necessary because... !!! FILL THIS
+ * */
 
 // The main game class
 class LightEmAll extends World {
   // Random seed for rotation
-  private static final Random RANDOBJ = new Random(1);
+  private final Random RANDOBJ = new Random(1);
+  private final int CURRSEC = (int) (System.currentTimeMillis()/1000);
 
   // a list of columns of GamePieces
   ArrayList<ArrayList<GamePiece>> board;
@@ -21,6 +33,11 @@ class LightEmAll extends World {
   // the width and height of the board
   int width;
   int height;
+  int score;
+  // height is the height of just the board/game
+  // boardHeight is the height including the extra space (for extra credit)
+  int boardHeight;
+  int boardType;
   // the current location of the power station, as well as its effective radius
   int powerRow;
   int powerCol;
@@ -31,6 +48,7 @@ class LightEmAll extends World {
 
     this.width = numCols * GamePiece.CELL_LENGTH;
     this.height = numRows * GamePiece.CELL_LENGTH;
+    this.boardHeight = numRows * GamePiece.CELL_LENGTH + (this.height / 5);
 
     // 0 is manualGeneration, 1 is fractal, 2 is random
     if (boardType == 0) {
@@ -69,10 +87,12 @@ class LightEmAll extends World {
       this.connect();
       this.rotatePieces();
     }
+    this.boardType = boardType;
     this.graph = new HashMap<GamePiece, Integer>();
     this.initHash();
     this.radius = this.calcRadius();
     this.getPowered();
+    this.score = 0;
   }
 
   // EFFECT: Rotates the wiring by a random number
@@ -430,9 +450,25 @@ class LightEmAll extends World {
   }
 
   // Makes the scene with all the game pieces drawn.
+  // Now integrates timer, score, etc.
   public WorldScene makeScene() {
+    int extraSpace = this.boardHeight - this.height;
+    int indentSpace = extraSpace / 10;
     this.radius = calcRadius();
     this.getPowered();
+
+    WorldImage extraSpaceRect = new RectangleImage(this.width, extraSpace, OutlineMode.SOLID,
+        Color.DARK_GRAY);
+    WorldImage time = new TextImage("Time: " + this.processTime(), this.width / 22, Color.white);
+    WorldImage score = new TextImage("Moves: " + this.score, this.width / 22, Color.white);
+    WorldImage gameTitle = new TextImage(this.processTitle(), this.width / 18, Color.white);
+
+    extraSpaceRect = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.TOP, time, -indentSpace,
+        -indentSpace, extraSpaceRect);
+    extraSpaceRect = new OverlayOffsetAlign(AlignModeX.LEFT, AlignModeY.BOTTOM, score, -indentSpace,
+        indentSpace, extraSpaceRect);
+    extraSpaceRect = new OverlayOffsetAlign(AlignModeX.CENTER, AlignModeY.MIDDLE, gameTitle,
+        -indentSpace * 3, 0, extraSpaceRect);
 
     WorldScene scene = new WorldScene(this.width, this.height);
 
@@ -440,10 +476,49 @@ class LightEmAll extends World {
       for (GamePiece cell : row) {
         scene.placeImageXY(cell.drawPiece(this.radius),
             cell.col * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2,
-            cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2);
+            (cell.row * GamePiece.CELL_LENGTH + GamePiece.CELL_LENGTH / 2) + extraSpace);
       }
     }
+    scene.placeImageXY(extraSpaceRect, this.width / 2, extraSpace / 2);
     return scene;
+  }
+
+  // Returns the title of the game depending on the boardType the user entered
+  String processTitle() {
+    if (this.boardType == 0) {
+      return "Manual Generation";
+    }
+    else if (this.boardType == 1) {
+      return "Fractal Puzzle";
+    }
+    else {
+      return "Kruskal's Enigma";
+    }
+  }
+
+  // Returns the correctly formatted time as String, accounting for minutes
+  String processTime() {
+    int seconds = (int) (System.currentTimeMillis()/1000) - CURRSEC;
+    
+    int min = seconds/60;
+    seconds = seconds % 60;
+    
+    String minStr = "";
+    String secStr = "";
+    
+    if (min < 10) {
+      minStr = "0" + min;
+    }
+    else {
+      minStr = ((Integer)min).toString();
+    }
+    if (seconds < 10) {
+      secStr = "0" + seconds;
+    }
+    else {
+      secStr = ((Integer)seconds).toString();
+    }
+    return minStr+":"+secStr;
   }
 
   // Not used anymore
@@ -487,6 +562,7 @@ class LightEmAll extends World {
     return boardResult;
   }
 
+  // NOT USED FOR PART 3
   // Creates the game board using a subdivision algorithm for fractal-like wiring
   public void fractalBoard(int numRows, int numCols, int currRow, int currCol) {
     int startRow = currRow;
@@ -573,20 +649,25 @@ class LightEmAll extends World {
     this.powerRow = 0;
   }
 
-  // Handles all clicking
+  // Handles all clicking when clicking within the game board
   public void onMouseClicked(Posn mousePos, String button) {
-    int posX = mousePos.x / GamePiece.CELL_LENGTH;
-    int posY = mousePos.y / GamePiece.CELL_LENGTH;
-    GamePiece gp = this.board.get(posY).get(posX);
-    if (button.equals("LeftButton")
-        && (posY <= this.height && 0 <= posY && posX <= this.width && 0 <= posX)) {
-      gp.rotate();
+
+    if (mousePos.y >= (this.boardHeight - this.height)) {
+      int posX = mousePos.x / GamePiece.CELL_LENGTH;
+      int posY = (mousePos.y - (this.boardHeight - this.height)) / GamePiece.CELL_LENGTH;
+
+      GamePiece gp = this.board.get(posY).get(posX);
+
+      if (button.equals("LeftButton")
+          && (posY <= this.boardHeight && 0 <= posY && posX <= this.width && 0 <= posX)) {
+        gp.rotate();
+      }
+      this.score++;
     }
   }
 
   // Handles all keys clicked (to move the powerstation)
   public void onKeyEvent(String key) {
-
     if (key.equals("left")) {
       if ((this.powerCol - 1 > -1)
           && twoPiecesConnected(this.board.get(this.powerRow).get(this.powerCol),
@@ -594,6 +675,7 @@ class LightEmAll extends World {
         this.board.get(this.powerRow).get(this.powerCol).powerStation = false;
         this.board.get(this.powerRow).get(this.powerCol - 1).powerStation = true;
         this.powerCol--;
+        this.score++;
       }
     }
 
@@ -604,6 +686,7 @@ class LightEmAll extends World {
         this.board.get(this.powerRow).get(this.powerCol).powerStation = false;
         this.board.get(this.powerRow).get(this.powerCol + 1).powerStation = true;
         this.powerCol++;
+        this.score++;
       }
     }
 
@@ -614,6 +697,7 @@ class LightEmAll extends World {
         this.board.get(this.powerRow).get(this.powerCol).powerStation = false;
         this.board.get(this.powerRow - 1).get(this.powerCol).powerStation = true;
         this.powerRow--;
+        this.score++;
       }
     }
 
@@ -624,6 +708,7 @@ class LightEmAll extends World {
         this.board.get(this.powerRow).get(this.powerCol).powerStation = false;
         this.board.get(this.powerRow + 1).get(this.powerCol).powerStation = true;
         this.powerRow++;
+        this.score++;
       }
     }
   }
@@ -650,8 +735,14 @@ class LightEmAll extends World {
 
   // The end scene that congratulates the user if game is over (ie. won)
   public WorldScene finalScene() {
+    int fontSize = this.height/8;
     WorldScene ws = this.makeScene();
-    ws.placeImageXY(new TextImage("Winner", 20, Color.MAGENTA), this.width / 2, this.height / 2);
+    WorldImage score = new TextImage("Score: " + this.score, fontSize, Color.MAGENTA);
+    WorldImage time = new TextImage("Time: " + this.processTime(), fontSize, Color.MAGENTA);
+    WorldImage win = new TextImage("You won!", fontSize, Color.MAGENTA);
+    WorldImage finalImage = new AboveImage(win, score, time);
+
+    ws.placeImageXY(finalImage, this.width / 2, this.boardHeight / 2);
     return ws;
   }
 }
@@ -817,8 +908,6 @@ class GamePiece {
       }
     }
     else {
-      // System.out.println("not in: (" + this.col + ", " + this.row + ") " +
-      // this.distToPS);
       LineImage vertLineNP = new LineImage(new Posn(0, CELL_LENGTH / 2), Color.GRAY);
       LineImage horLineNP = new LineImage(new Posn(CELL_LENGTH / 2, 0), Color.GRAY);
 
@@ -938,13 +1027,13 @@ class ExamplesGame {
     fivex5Power = new LightEmAll(5, 5, 1);
 
     // To test kruskal's:
-    kruskalsBoard = new LightEmAll(4, 5, 2);
+    kruskalsBoard = new LightEmAll(5,5, 2);
   }
 
   // Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-    this.kruskalsBoard.bigBang(kruskalsBoard.width, kruskalsBoard.height, .003);
+    this.kruskalsBoard.bigBang(kruskalsBoard.width, kruskalsBoard.boardHeight, .003);
   }
 
   // Testing the makeScene() method
@@ -1359,7 +1448,7 @@ class ExamplesGame {
     initData();
 
     WorldScene result = this.twox2Power.makeScene();
-    result.placeImageXY(new TextImage("Winner", 20, Color.MAGENTA), this.twox2Power.width / 2,
+    result.placeImageXY(new TextImage("You won!", 20, Color.MAGENTA), this.twox2Power.width / 2,
         this.twox2Power.height / 2);
 
     t.checkExpect(this.twox2Power.finalScene(), result);
