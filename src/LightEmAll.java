@@ -959,6 +959,7 @@ class GamePiece {
 
 // Represents a wire; used for Kruskal's algorithm
 class Edge {
+
   private static final Random RANDOBJ = new Random(1);
 
   GamePiece fromNode;
@@ -1034,8 +1035,7 @@ class ExamplesGame {
   // Runs the program with a predetermined, easy-to-solve pattern.
   void testMain(Tester t) {
     initData();
-    // this.kruskalsBoard.bigBang(this.kruskalsBoard.width,
-    // this.kruskalsBoard.boardHeight, .003);
+    //this.kruskalsBoard.bigBang(this.kruskalsBoard.width, this.kruskalsBoard.boardHeight, .003);
   }
 
   // Testing the makeScene() method
@@ -1554,7 +1554,7 @@ class ExamplesGame {
     Edge e = new Edge(this.kruskalsBoard.board.get(0).get(0),
         this.kruskalsBoard.board.get(0).get(1));
 
-    // t.checkExpect(this.kruskalsBoard.board.get(0).get(0).top, true);
+    //t.checkExpect(this.kruskalsBoard.board.get(0).get(0).top, true);
   }
 
   // Tests the addToMst() method
@@ -1563,7 +1563,7 @@ class ExamplesGame {
     initData();
     Edge result = new Edge(this.kruskalsBoard.board.get(4).get(0),
         this.kruskalsBoard.board.get(4).get(1));
-    // t.checkExpect(this.kruskalsBoard.mst.get(0), result);
+    t.checkExpect(this.kruskalsBoard.mst.get(0), result);
   }
 
   // Testing the method existsEdge()
@@ -1627,8 +1627,60 @@ class ExamplesGame {
     t.checkExpect(new SortByWeight().compare(e1, e1), 0);
   }
 
+  // Testing the assignNeighbors() method
   void testAssignNeighbors(Tester t) {
+    initData();
 
+    ArrayList<GamePiece> neighbor00 = new ArrayList<GamePiece>(Arrays
+        .asList(this.threex3Power.board.get(0).get(1), this.threex3Power.board.get(1).get(0)));
+
+    ArrayList<GamePiece> neighbor01 = new ArrayList<GamePiece>(
+        Arrays.asList(this.threex3Power.board.get(0).get(0), this.threex3Power.board.get(0).get(2),
+            this.threex3Power.board.get(1).get(1)));
+
+    ArrayList<GamePiece> neighbor02 = new ArrayList<GamePiece>(Arrays
+        .asList(this.threex3Power.board.get(0).get(1), this.threex3Power.board.get(1).get(2)));
+
+    ArrayList<GamePiece> neighbor10 = new ArrayList<GamePiece>(
+        Arrays.asList(this.threex3Power.board.get(0).get(0), this.threex3Power.board.get(2).get(0),
+            this.threex3Power.board.get(1).get(1)));
+
+    ArrayList<GamePiece> neighbor11 = new ArrayList<GamePiece>(
+        Arrays.asList(this.threex3Power.board.get(1).get(0), this.threex3Power.board.get(1).get(2),
+            this.threex3Power.board.get(0).get(1), this.threex3Power.board.get(2).get(1)));
+
+    ArrayList<GamePiece> neighbor12 = new ArrayList<GamePiece>(
+        Arrays.asList(this.threex3Power.board.get(0).get(2), this.threex3Power.board.get(2).get(2),
+            this.threex3Power.board.get(1).get(1)));
+
+    ArrayList<GamePiece> neighbor20 = new ArrayList<GamePiece>(Arrays
+        .asList(this.threex3Power.board.get(1).get(0), this.threex3Power.board.get(2).get(1)));
+
+    ArrayList<GamePiece> neighbor21 = new ArrayList<GamePiece>(
+        Arrays.asList(this.threex3Power.board.get(2).get(0), this.threex3Power.board.get(2).get(2),
+            this.threex3Power.board.get(1).get(1)));
+
+    ArrayList<GamePiece> neighbor22 = new ArrayList<GamePiece>(Arrays
+        .asList(this.threex3Power.board.get(1).get(2), this.threex3Power.board.get(2).get(1)));
+
+    this.threex3Power.board.get(0).get(0).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(0).get(0).neighbors, neighbor00);
+    this.threex3Power.board.get(0).get(1).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(0).get(1).neighbors, neighbor01);
+    this.threex3Power.board.get(0).get(2).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(0).get(2).neighbors, neighbor02);
+    this.threex3Power.board.get(1).get(0).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(1).get(0).neighbors, neighbor10);
+    this.threex3Power.board.get(1).get(1).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(1).get(1).neighbors, neighbor11);
+    this.threex3Power.board.get(1).get(2).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(1).get(2).neighbors, neighbor12);
+    this.threex3Power.board.get(2).get(0).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(2).get(0).neighbors, neighbor20);
+    this.threex3Power.board.get(2).get(1).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(2).get(1).neighbors, neighbor21);
+    this.threex3Power.board.get(2).get(2).assignNeighbors(this.threex3Power.board);
+    t.checkExpect(this.threex3Power.board.get(2).get(2).neighbors, neighbor22);
   }
 
   // Testing the toString() method
